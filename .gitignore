@@ -1,0 +1,33 @@
+# ── Dependências ─────────────────────────────────────────────────────────
+node_modules/
+
+# ── Builds ───────────────────────────────────────────────────────────────
+dist/
+build/
+.quasar/
+
+# ── Ambiente (segredos) ──────────────────────────────────────────────────
+# O front/.gitignore não cobria .env; este cobre os dois lados.
+.env
+.env.*
+!.env.example
+
+# ── Sistema operativo / editores ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+
+# ── Registos ─────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Backend ──────────────────────────────────────────────────────────────
+# back/ tem repositório git próprio (branch homolog, com histórico).
+# Fica de fora deste, para não o transformar em submódulo por acidente.
+back/
+
+# front/ tem repositório git próprio (branch homolog, remote GitLab).
+front/

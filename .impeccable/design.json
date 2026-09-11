@@ -1,0 +1,625 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-10T16:07:53Z",
+  "title": "Design System: MedicManager — Clínica Alfavida",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Verde Menta Clínico",
+        "canonical": "#32b989",
+        "tonalRamp": [
+          "oklch(20% 0.05 160)",
+          "oklch(30% 0.07 160)",
+          "oklch(40% 0.09 160)",
+          "oklch(50% 0.11 160)",
+          "oklch(60% 0.12 160)",
+          "oklch(70% 0.13 160)",
+          "oklch(82% 0.09 160)",
+          "oklch(94% 0.04 160)"
+        ]
+      },
+      "accent-strong": {
+        "role": "primary",
+        "displayName": "Verde Menta Profundo",
+        "canonical": "#1e8460",
+        "note": "A única das duas variantes que passa WCAG AA com texto branco (4,6:1). Obrigatória em sólidos verdes com texto branco."
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Verde Menta Velado",
+        "canonical": "rgba(50, 185, 137, 0.10)",
+        "note": "Tinta translúcida para fundo de estado positivo e item seleccionado. 0.14 no tema escuro."
+      },
+      "accent-2": {
+        "role": "secondary",
+        "displayName": "Roxo Sereno",
+        "canonical": "#8b7cf6",
+        "tonalRamp": [
+          "oklch(20% 0.07 292)",
+          "oklch(30% 0.10 292)",
+          "oklch(40% 0.13 292)",
+          "oklch(50% 0.15 292)",
+          "oklch(58% 0.17 292)",
+          "oklch(66% 0.17 292)",
+          "oklch(80% 0.10 292)",
+          "oklch(93% 0.04 292)"
+        ],
+        "note": "Séries secundárias em gráficos e segunda mancha do halo de fundo. Não é cor de interface."
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Vermelho Recusa",
+        "canonical": "#c53030",
+        "tonalRamp": [
+          "oklch(20% 0.08 27)",
+          "oklch(28% 0.11 27)",
+          "oklch(36% 0.14 27)",
+          "oklch(44% 0.17 27)",
+          "oklch(52% 0.19 27)",
+          "oklch(64% 0.17 27)",
+          "oklch(80% 0.10 27)",
+          "oklch(93% 0.04 27)"
+        ],
+        "note": "#f87171 no tema escuro, clareado para 6,3:1 sobre superfície escura."
+      },
+      "chip-info": {
+        "role": "tertiary",
+        "displayName": "Azul Registo",
+        "canonical": "#2b6cb0",
+        "note": "#8ec5f0 no tema escuro."
+      },
+      "chip-ok": {
+        "role": "tertiary",
+        "displayName": "Verde Fechado",
+        "canonical": "#276749",
+        "note": "#6ed7a8 no tema escuro."
+      },
+      "chip-warn": {
+        "role": "tertiary",
+        "displayName": "Âmbar Atenção",
+        "canonical": "#a8491b",
+        "note": "#f0a868 no tema escuro."
+      },
+      "chip-purple": {
+        "role": "tertiary",
+        "displayName": "Roxo Marcador",
+        "canonical": "#553c9a",
+        "note": "#bda9f7 no tema escuro."
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Branco Superfície",
+        "canonical": "#ffffff",
+        "note": "#151b19 no tema escuro."
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Branco Elevado",
+        "canonical": "#fafbfc",
+        "note": "#1a221f no tema escuro."
+      },
+      "surface-3": {
+        "role": "neutral",
+        "displayName": "Névoa Fria",
+        "canonical": "#f7f8fc",
+        "note": "#202a26 no tema escuro."
+      },
+      "page-bg": {
+        "role": "neutral",
+        "displayName": "Fundo Névoa",
+        "canonical": "#f7f8fc",
+        "note": "#0d1211 no tema escuro — aí é a camada mais escura de todas, e os cartões destacam-se por cima."
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Contorno Ténue",
+        "canonical": "#f0f1f5",
+        "note": "Desenha o cartão. #23302b no tema escuro."
+      },
+      "border-soft": {
+        "role": "neutral",
+        "displayName": "Contorno Fantasma",
+        "canonical": "#f3f4f6",
+        "note": "Separa linhas dentro de um contentor. #1e2a26 no tema escuro."
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Contorno Firme",
+        "canonical": "#e2e8f0",
+        "note": "Desenha campos. O único contorno que se afirma. #2d3d37 no tema escuro."
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Carvão Azulado",
+        "canonical": "#1a202c",
+        "note": "Títulos. #f2f5f4 no tema escuro."
+      },
+      "text-2": {
+        "role": "neutral",
+        "displayName": "Cinzento Ardósia",
+        "canonical": "#2d3748",
+        "note": "Corpo. #dde5e2 no tema escuro."
+      },
+      "text-3": {
+        "role": "neutral",
+        "displayName": "Cinzento Médio",
+        "canonical": "#4a5568",
+        "note": "Cabeçalhos de tabela, itens de navegação em repouso. #bcc7c3 no tema escuro."
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Cinzento Legenda",
+        "canonical": "#67758b",
+        "note": "Legendas. 4,67:1 — era #718096, a 4,02:1, e era usado precisamente no texto pequeno onde precisava de 4,5:1."
+      },
+      "text-faint": {
+        "role": "neutral",
+        "displayName": "Cinzento Legível",
+        "canonical": "#68738a",
+        "note": "Rótulos e placeholders. Subiu de #a0aec0 (2,3:1, reprovava AA) para este valor a 4,5:1. #8b9a94 no tema escuro, a 4,9:1."
+      },
+      "text-disabled": {
+        "role": "neutral",
+        "displayName": "Cinzento Inerte",
+        "canonical": "#d1d5db",
+        "note": "#5b6b65 no tema escuro."
+      },
+      "nav-active-bg": {
+        "role": "primary",
+        "displayName": "Pílula Activa",
+        "canonical": "#1e8460",
+        "note": "#32b989 no tema escuro — a pílula é sempre o oposto do fundo."
+      },
+      "nav-active-fg": {
+        "role": "neutral",
+        "displayName": "Texto da Pílula",
+        "canonical": "#ffffff",
+        "note": "#0b1210 no tema escuro."
+      },
+      "st-info": {
+        "role": "tertiary",
+        "displayName": "Azul Registo · gráfico",
+        "canonical": "#3182ce",
+        "note": "Ícones, barras e contornos de 1px. ≥3:1 sobre superfície. #63b3ed no tema escuro."
+      },
+      "st-info-text": {
+        "role": "tertiary",
+        "displayName": "Azul Registo · texto",
+        "canonical": "#2b6cb0",
+        "note": "Texto sobre superfície, ≥4,5:1 nos dois temas. #8ec5f0 no tema escuro."
+      },
+      "st-info-tint": {
+        "role": "tertiary",
+        "displayName": "Azul Registo · fundo",
+        "canonical": "rgba(49, 130, 206, 0.10)",
+        "note": "Fundo tingido translúcido. 0,14 de opacidade no tema escuro."
+      },
+      "st-ok": {
+        "role": "tertiary",
+        "displayName": "Verde Fechado · gráfico",
+        "canonical": "#1e8460",
+        "note": "Ícones, barras e contornos de 1px. ≥3:1 sobre superfície. #32b989 no tema escuro."
+      },
+      "st-ok-text": {
+        "role": "tertiary",
+        "displayName": "Verde Fechado · texto",
+        "canonical": "#276749",
+        "note": "Texto sobre superfície, ≥4,5:1 nos dois temas. #6ed7a8 no tema escuro."
+      },
+      "st-ok-tint": {
+        "role": "tertiary",
+        "displayName": "Verde Fechado · fundo",
+        "canonical": "rgba(50, 185, 137, 0.10)",
+        "note": "Fundo tingido translúcido. 0,14 de opacidade no tema escuro."
+      },
+      "st-warn": {
+        "role": "tertiary",
+        "displayName": "Âmbar Atenção · gráfico",
+        "canonical": "#dd6b20",
+        "note": "Ícones, barras e contornos de 1px. ≥3:1 sobre superfície. #ed8936 no tema escuro."
+      },
+      "st-warn-text": {
+        "role": "tertiary",
+        "displayName": "Âmbar Atenção · texto",
+        "canonical": "#a8491b",
+        "note": "Texto sobre superfície, ≥4,5:1 nos dois temas. #f0a868 no tema escuro."
+      },
+      "st-warn-tint": {
+        "role": "tertiary",
+        "displayName": "Âmbar Atenção · fundo",
+        "canonical": "rgba(221, 107, 32, 0.10)",
+        "note": "Fundo tingido translúcido. 0,14 de opacidade no tema escuro."
+      },
+      "st-danger": {
+        "role": "tertiary",
+        "displayName": "Vermelho Recusa · gráfico",
+        "canonical": "#e53e3e",
+        "note": "Ícones, barras e contornos de 1px. ≥3:1 sobre superfície. #fc8181 no tema escuro."
+      },
+      "st-danger-text": {
+        "role": "tertiary",
+        "displayName": "Vermelho Recusa · texto",
+        "canonical": "#c53030",
+        "note": "Texto sobre superfície, ≥4,5:1 nos dois temas. #f87171 no tema escuro."
+      },
+      "st-danger-tint": {
+        "role": "tertiary",
+        "displayName": "Vermelho Recusa · fundo",
+        "canonical": "rgba(229, 62, 62, 0.10)",
+        "note": "Fundo tingido translúcido. 0,14 de opacidade no tema escuro."
+      },
+      "st-purple": {
+        "role": "tertiary",
+        "displayName": "Roxo Marcador · gráfico",
+        "canonical": "#805ad5",
+        "note": "Ícones, barras e contornos de 1px. ≥3:1 sobre superfície. #a78bfa no tema escuro."
+      },
+      "st-purple-text": {
+        "role": "tertiary",
+        "displayName": "Roxo Marcador · texto",
+        "canonical": "#553c9a",
+        "note": "Texto sobre superfície, ≥4,5:1 nos dois temas. #bda9f7 no tema escuro."
+      },
+      "st-purple-tint": {
+        "role": "tertiary",
+        "displayName": "Roxo Marcador · fundo",
+        "canonical": "rgba(128, 90, 213, 0.10)",
+        "note": "Fundo tingido translúcido. 0,14 de opacidade no tema escuro."
+      },
+      "st-teal": {
+        "role": "tertiary",
+        "displayName": "Verde-azul Lab · gráfico",
+        "canonical": "#0d9488",
+        "note": "Ícones, barras e contornos de 1px. ≥3:1 sobre superfície. #38b2ac no tema escuro."
+      },
+      "st-teal-text": {
+        "role": "tertiary",
+        "displayName": "Verde-azul Lab · texto",
+        "canonical": "#2c7a7b",
+        "note": "Texto sobre superfície, ≥4,5:1 nos dois temas. #7fd4cd no tema escuro."
+      },
+      "st-teal-tint": {
+        "role": "tertiary",
+        "displayName": "Verde-azul Lab · fundo",
+        "canonical": "rgba(13, 148, 136, 0.10)",
+        "note": "Fundo tingido translúcido. 0,14 de opacidade no tema escuro."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Números de destaque. 24px."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Título de página. 20px."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Subtítulos de página. 18px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Nomes em cartões, títulos de secção. 16px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "O tamanho de trabalho: células, navegação, campos, menus. 14px, entrelinha 1,5."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rótulos, cabeçalhos de tabela, metadados, chips. 12px — o piso absoluto."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-ambient",
+        "value": "0 2px 10px var(--shadow-soft)",
+        "purpose": "Sombra em repouso de q-card. No tema escuro acompanha-se de um realce interior de 3% no topo."
+      },
+      {
+        "name": "panel-hairline",
+        "value": "0 1px 4px rgba(0, 0, 0, 0.04)",
+        "purpose": "Barras de ferramentas e cartões de formulário — quase imperceptível."
+      },
+      {
+        "name": "card-lift",
+        "value": "0 8px 28px rgba(0, 0, 0, 0.08)",
+        "purpose": "Cartão de dados ao passar o rato, acompanhado de translateY(-2px)."
+      },
+      {
+        "name": "menu-float",
+        "value": "0 12px 32px var(--shadow)",
+        "purpose": "Menus e popups de select — camada flutuante."
+      },
+      {
+        "name": "notify-float",
+        "value": "0 8px 24px rgba(0, 0, 0, 0.12)",
+        "purpose": "Cartões de notificação."
+      },
+      {
+        "name": "nav-glow",
+        "value": "0 4px 14px var(--nav-glow)",
+        "purpose": "Brilho verde sob a pílula de navegação activa. O único brilho colorido estrutural."
+      },
+      {
+        "name": "focus-ring",
+        "value": "0 0 0 3px rgba(50, 185, 137, 0.18)",
+        "purpose": "Anel de foco de campos (--ring). 0.25 de opacidade no tema escuro."
+      },
+      {
+        "name": "error-ring",
+        "value": "0 0 0 3px rgba(229, 62, 62, 0.16)",
+        "purpose": "Anel de erro de campos."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "0.12s",
+        "purpose": "Realce de item em popups e linhas de tabelas densas."
+      },
+      {
+        "name": "state-row",
+        "value": "0.14s ease",
+        "purpose": "Fundo de linha de tabela ao passar o rato."
+      },
+      {
+        "name": "state-control",
+        "value": "0.15s",
+        "purpose": "Botões de ícone e botão de terminar sessão."
+      },
+      {
+        "name": "state-standard",
+        "value": "0.18s ease",
+        "purpose": "O valor dominante: navegação, campos, contorno e anel de foco."
+      },
+      {
+        "name": "surface-lift",
+        "value": "0.2s ease",
+        "purpose": "Elevação e deslocação de cartões de dados."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "quasar-defaults",
+        "value": "sm 600px · md 1024px · lg 1440px · xl 1920px",
+        "purpose": "O sistema apoia-se nos breakpoints do Quasar; quase não declara consultas de média próprias."
+      },
+      {
+        "name": "custom-900",
+        "value": "900px",
+        "purpose": "A única consulta de média própria encontrada no código."
+      }
+    ],
+    "surfaceMaterial": {
+      "glass": {
+        "background": "var(--nav-glass)",
+        "filter": "blur(18px) saturate(150%)",
+        "backdrop": "radial-gradient(46vw 42vh at 8% -6%, rgba(50, 185, 137, 0.18), transparent 62%), radial-gradient(40vw 38vh at 92% 6%, rgba(139, 124, 246, 0.14), transparent 60%)",
+        "purpose": "Material de assinatura, hoje na barra lateral. Requer o halo radial fixo por trás da página; sem ele o desfoque não tem o que apanhar."
+      }
+    },
+    "radii": [
+      {
+        "name": "--r-sm",
+        "value": "8px",
+        "purpose": "Elementos pequenos. O raio mais usado da aplicação (159 ocorrências) antes de ser token."
+      },
+      {
+        "name": "--r-control",
+        "value": "12px",
+        "purpose": "Botões, campos, inputs nativos."
+      },
+      {
+        "name": "--r-panel",
+        "value": "14px",
+        "purpose": "Painéis e menus."
+      },
+      {
+        "name": "--r-card",
+        "value": "18px",
+        "purpose": "Cartões, diálogos, contentores de tabela."
+      },
+      {
+        "name": "--r-pill",
+        "value": "999px",
+        "purpose": "Navegação, pesquisa, chips, botões de ícone redondos."
+      }
+    ],
+    "typeScale": [
+      {
+        "name": "--fs-label",
+        "value": "12px"
+      },
+      {
+        "name": "--fs-body",
+        "value": "14px"
+      },
+      {
+        "name": "--fs-title",
+        "value": "16px"
+      },
+      {
+        "name": "--fs-section",
+        "value": "18px"
+      },
+      {
+        "name": "--fs-heading",
+        "value": "20px"
+      },
+      {
+        "name": "--fs-display",
+        "value": "24px"
+      },
+      {
+        "name": "--lh-tight",
+        "value": "1.3",
+        "purpose": "Rótulos e títulos."
+      },
+      {
+        "name": "--lh-body",
+        "value": "1.5",
+        "purpose": "Corpo e células de tabela."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acção que confirma. Sem elevação, sem caixa alta, peso 600.",
+      "html": "<button class='ds-btn-primary'>Guardar</button>",
+      "css": ".ds-btn-primary { background: var(--accent-strong, #1e8460); color: #fff; font: 600 13px/1.4 'Inter Variable', Inter, sans-serif; letter-spacing: 0; text-transform: none; border: none; border-radius: var(--r-control, 12px); min-height: 42px; padding: 0 20px; cursor: pointer; transition: background 0.18s ease, box-shadow 0.18s ease; } .ds-btn-primary:hover { background: #196f50; } .ds-btn-primary:focus-visible { outline: none; box-shadow: var(--ring, 0 0 0 3px rgba(50,185,137,0.18)); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Ghost Icon Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "A variante dominante: acções de linha e da barra de topo. Transparente em repouso.",
+      "html": "<button class='ds-btn-ghost' aria-label='Editar'><svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20h9'/><path d='M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z'/></svg></button>",
+      "css": ".ds-btn-ghost { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: var(--r-pill, 999px); color: var(--text-muted, #718096); cursor: pointer; transition: background 0.15s, color 0.15s; } .ds-btn-ghost:hover { background: var(--surface-3, #f7f8fc); color: var(--text-2, #2d3748); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: var(--ring, 0 0 0 3px rgba(50,185,137,0.18)); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Caixa fechada com preenchimento suave. Substitui por completo o traço inferior do Material.",
+      "html": "<label class='ds-field'><span class='ds-field-label'>Nome do paciente</span><input class='ds-field-input' type='text' placeholder='Escreva o nome'></label>",
+      "css": ".ds-field { display: block; max-width: 320px; } .ds-field-label { display: block; font: 400 12px/1.4 'Inter Variable', Inter, sans-serif; color: var(--text-faint, #68738a); margin-bottom: 6px; } .ds-field-input { width: 100%; box-sizing: border-box; min-height: 42px; padding: 0 14px; background: var(--surface-3, #f7f8fc); color: var(--text, #1a202c); font: 500 13px/1.4 'Inter Variable', Inter, sans-serif; border: 1px solid var(--border-strong, #e2e8f0); border-radius: var(--r-control, 12px); outline: none; transition: border-color 0.18s ease, box-shadow 0.18s ease; } .ds-field-input::placeholder { color: var(--text-disabled, #d1d5db); } .ds-field-input:hover { border-color: var(--text-disabled, #d1d5db); } .ds-field-input:focus { border-color: var(--accent, #32b989); box-shadow: var(--ring, 0 0 0 3px rgba(50,185,137,0.18)); }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "A variante em pílula, na barra de topo e no cabeçalho das listagens.",
+      "html": "<div class='ds-search'><svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg><input type='search' placeholder='Pesquisa...'></div>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 8px; max-width: 340px; min-height: 40px; padding: 0 16px; background: var(--surface-3, #f7f8fc); border: 1px solid var(--border-strong, #e2e8f0); border-radius: var(--r-pill, 999px); color: var(--text-faint, #68738a); transition: border-color 0.18s ease, box-shadow 0.18s ease; } .ds-search:focus-within { border-color: var(--accent, #32b989); box-shadow: var(--ring, 0 0 0 3px rgba(50,185,137,0.18)); } .ds-search input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--text, #1a202c); font: 500 13px/1.4 'Inter Variable', Inter, sans-serif; } .ds-search input::placeholder { color: var(--text-disabled, #d1d5db); }"
+    },
+    {
+      "name": "Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Pílula de 40px. Em repouso o ícone é mais claro que o texto; ao passar o rato desloca-se 1px.",
+      "html": "<a class='ds-nav-item' href='#'><svg viewBox='0 0 24 24' width='19' height='19' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z'/></svg><span>Estoque</span></a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill, 999px); color: var(--text-3, #4a5568); font: 500 13px/1.4 'Inter Variable', Inter, sans-serif; text-decoration: none; transition: background 0.18s ease, color 0.18s ease; } .ds-nav-item svg { color: var(--text-faint, #68738a); transition: color 0.18s ease, transform 0.18s ease; } .ds-nav-item:hover { background: var(--surface-3, #f7f8fc); color: var(--text-2, #2d3748); } .ds-nav-item:hover svg { color: var(--text-muted, #718096); transform: translateX(1px); }"
+    },
+    {
+      "name": "Nav Item — Active",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Pílula sólida com brilho verde. O ícone não se desloca: o item activo está imóvel.",
+      "html": "<a class='ds-nav-item-on' href='#'><svg viewBox='0 0 24 24' width='19' height='19' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z'/></svg><span>Estoque</span></a>",
+      "css": ".ds-nav-item-on { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill, 999px); background: var(--nav-active-bg, #1e8460); color: var(--nav-active-fg, #fff); font: 600 13px/1.4 'Inter Variable', Inter, sans-serif; text-decoration: none; box-shadow: 0 4px 14px var(--nav-glow, rgba(30,132,96,0.30)); } .ds-nav-item-on svg { color: currentColor; } .ds-nav-item-on:hover { filter: brightness(1.08); }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip-status",
+      "description": "Tinta translúcida com texto no tom escuro correspondente — nunca preenchimento sólido, para funcionar nos dois temas.",
+      "html": "<span class='ds-chip ds-chip--ok'>Concluído</span> <span class='ds-chip ds-chip--info'>Em triagem</span> <span class='ds-chip ds-chip--warn'>Stock baixo</span>",
+      "css": ".ds-chip { display: inline-block; font: 700 10px/1.2 'Inter Variable', Inter, sans-serif; letter-spacing: 1.2px; text-transform: uppercase; padding: 3px 9px; border-radius: var(--r-pill, 999px); } .ds-chip--ok { background: rgba(50,185,137,0.10); color: var(--chip-ok, #276749); } .ds-chip--info { background: rgba(66,153,225,0.10); color: var(--chip-info, #2b6cb0); } .ds-chip--warn { background: rgba(237,137,54,0.12); color: var(--chip-warn, #a8491b); }"
+    },
+    {
+      "name": "Data Table",
+      "kind": "custom",
+      "refersTo": "table-cell",
+      "description": "O contentor partilhado por q-table e pelas tabelas construídas à mão. Quantidades à direita, cabeçalho em caixa alta pequena.",
+      "html": "<table class='ds-table'><thead><tr><th>Artigo</th><th>Lote</th><th class='ds-num'>Quantidade</th></tr></thead><tbody><tr><td class='ds-strong'>Paracetamol 500mg</td><td>L-20260412</td><td class='ds-num'>1 240 <span class='ds-unit'>un</span></td></tr><tr><td class='ds-strong'>Soro fisiológico 0,9%</td><td>L-20260130</td><td class='ds-num'>86 <span class='ds-unit'>un</span></td></tr></tbody></table>",
+      "css": ".ds-table { width: 100%; border-collapse: collapse; background: var(--surface, #fff); border: 1px solid var(--border, #f0f1f5); border-radius: var(--r-card, 18px); overflow: hidden; } .ds-table thead th { background: var(--surface-2, #fafbfc); color: var(--text-3, #4a5568); font: 700 11px/1.2 'Inter Variable', Inter, sans-serif; letter-spacing: 0.6px; text-transform: uppercase; text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border, #f0f1f5); } .ds-table tbody td { font: 500 13px/1.4 'Inter Variable', Inter, sans-serif; color: var(--text-2, #2d3748); padding: 12px 16px; border-bottom: 1px solid var(--border-soft, #f3f4f6); } .ds-table tbody tr:last-child td { border-bottom: none; } .ds-table tbody tr { transition: background 0.14s ease; } .ds-table tbody tr:hover td { background: var(--surface-3, #f7f8fc); } .ds-table .ds-num { text-align: right; font-weight: 600; } .ds-table .ds-strong { color: var(--text, #1a202c); font-weight: 600; } .ds-table .ds-unit { font-size: 11px; color: var(--text-faint, #68738a); margin-left: 3px; }"
+    },
+    {
+      "name": "Data Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Cartão da vista em grelha: avatar circular com gradiente verde, nome, subtítulo e barra de acções separada.",
+      "html": "<article class='ds-card'><div class='ds-card-body'><div class='ds-card-avatar'>AM</div><div class='ds-card-name'>Ana Miguel</div><div class='ds-card-sub'>Paciente · 34 anos</div></div><div class='ds-card-actions'><button class='ds-btn-ghost' aria-label='Ver'><svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'><path d='M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z'/><circle cx='12' cy='12' r='2.6'/></svg></button></div></article>",
+      "css": ".ds-card { width: 190px; background: var(--surface, #fff); border: 1px solid var(--border, #f0f1f5); border-radius: var(--r-panel, 14px); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.2s ease, transform 0.2s ease; } .ds-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.08); transform: translateY(-2px); } .ds-card-body { padding: 22px 16px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; } .ds-card-avatar { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #32b989 0%, #26a69a 100%); color: #fff; display: flex; align-items: center; justify-content: center; font: 700 18px/1 'Inter Variable', Inter, sans-serif; letter-spacing: 0.5px; margin-bottom: 12px; } .ds-card-name { font: 600 13px/1.3 'Inter Variable', Inter, sans-serif; color: var(--text, #1a202c); } .ds-card-sub { font: 400 12px/1.4 'Inter Variable', Inter, sans-serif; color: var(--text-faint, #68738a); margin-top: 4px; } .ds-card-actions { border-top: 1px solid var(--border-soft, #f3f4f6); padding: 8px; display: flex; align-items: center; justify-content: center; } .ds-card .ds-btn-ghost { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: var(--r-pill, 999px); color: var(--text-muted, #718096); cursor: pointer; transition: background 0.15s, color 0.15s; } .ds-card .ds-btn-ghost:hover { background: var(--surface-3, #f7f8fc); color: var(--text-2, #2d3748); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Vidro sobre Verde",
+    "overview": "O sistema é uma base neutra atravessada por um único ponto de energia. A barra lateral flutua em vidro desfocado sobre um halo verde e roxo que vive no fundo da página; tudo o resto — cartões, tabelas, campos, botões — recua para branco, cinzento e contorno de 1px. A cor de marca não pinta superfícies grandes: aparece no anel de foco, na pílula da navegação activa e no botão que confirma. É o oposto de um painel colorido; é um painel calmo com um sinal.\n\nA atmosfera é calma mas viva. Calma porque o sistema é lido durante turnos inteiros, em máquinas fracas, por dez papéis diferentes que não podem hesitar sobre o que estão a ver. Viva porque o fundo respira, o vidro deixa passar o que está por trás, e a pílula verde da navegação diz sem margem para dúvida onde se está. A vivacidade está no ambiente, não nos controlos.\n\nOs componentes são discretos e neutros: recuam para os dados falarem. Os raios são generosos (18px em cartões, 12px em controlos, pílula na navegação e pesquisa), mas o tratamento é contido — preenchimentos quase inexistentes, contornos subtis, sem peso visual próprio. Um botão não compete com o número que está ao lado dele. O tema escuro não é uma folha de estilos paralela: é a mesma estrutura com os tokens trocados, e a paleta escura desvia os pretos ligeiramente para o verde para pertencer ao mesmo mundo.",
+    "keyCharacteristics": [
+      "Base neutra quase sem cor; o verde é o único acento e aparece pouco.",
+      "Vidro desfocado como material de assinatura, hoje na barra lateral.",
+      "Halo radial verde-e-roxo fixo por trás da página, para o desfoque ter o que apanhar.",
+      "Contorno de 1px como principal separador — não sombra, não faixa de cor.",
+      "Tema claro e escuro construídos sobre o mesmo conjunto de variáveis CSS.",
+      "Corpo a 14px com entrelinha de 1,5, e piso absoluto de 12px: legibilidade acima de densidade.",
+      "Etiquetas em caixa alta a 12px a estruturar listas e tabelas."
+    ],
+    "rules": [
+      {
+        "name": "A Regra dos Dois Verdes",
+        "body": "O verde da marca (accent) nunca carrega texto branco: dá 2,5:1 e reprova AA. Sólidos verdes com texto branco usam sempre accent-strong (4,6:1). Esta separação não é estilística — é a razão de o segundo verde existir.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Verde Escasso",
+        "body": "O acento ocupa no máximo ~10% de qualquer ecrã: foco, estado activo, acção primária. A sua raridade é o que o torna legível como sinal. Um ecrã onde o verde apareça em cinco sítios perdeu a regra.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Token Único",
+        "body": "Nenhuma cor entra num ficheiro .vue como literal. Toda a cor vem de uma variável CSS, porque o tema escuro é uma troca de valores — um hex fixo numa página é um ecrã que deixa de ter tema escuro.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Caixa Alta Curta",
+        "body": "Caixa alta só existe a 10px e 11px, e sempre com espaçamento de letra (1,2px e 0,6px). Nunca em corpo, nunca em títulos, nunca em botões — o text-transform: none global nos botões é deliberado e não se reverte.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra dos 64px",
+        "body": "Qualquer contentor de altura total desconta var(--header-h). 100vh cru põe a página 64px mais alta que o ecrã, faz aparecer scroll na janela e deixa o cabeçalho deslizar sobre o conteúdo.",
+        "section": "layout"
+      },
+      {
+        "name": "A Regra do Vidro Deliberado",
+        "body": "O vidro é vocabulário do sistema e pode sair da barra lateral — cabeçalhos fixos e diálogos são candidatos legítimos. O que não pode é alastrar por omissão: cada uso é uma decisão individual, aplicada a um elemento, com o halo por trás a justificá-lo. Uma tentativa anterior espalhou-o por dezenas de contentores e teve de ser revertida.",
+        "section": "shapes"
+      },
+      {
+        "name": "A Regra dos Cinco Raios",
+        "section": "shapes",
+        "body": "Nenhum sexto valor de raio. Um border-radius em px literal numa página é drift, não decisão — resolve-se para o token mais próximo. As páginas estão a zero literais: 8px, 12px, 14px, 18px e pílula cobrem tudo."
+      },
+      {
+        "name": "A Regra do Degrau Certo",
+        "section": "colors",
+        "body": "A escala de estado escolhe-se pelo papel, não pela cor: -text para texto (≥4,5:1), o nome cru para ícones e contornos de 1px (≥3:1), -tint para fundos. Usar o degrau gráfico em texto foi como ~180 casos de AA reprovada apareceram."
+      },
+      {
+        "name": "A Regra do Piso de Doze",
+        "section": "typography",
+        "body": "Nada abaixo de 12px, em lado nenhum. O corpo é 14px. Um ecrã que precise de descer abaixo disso para caber está a pedir menos colunas, não menos tamanho — e num sistema onde se lê uma dose, texto pequeno é risco clínico, não densidade."
+      },
+      {
+        "name": "A Regra do Tamanho em Token",
+        "section": "typography",
+        "body": "Nenhum font-size em px literal. Seis degraus cobrem tudo; um sétimo valor é sedimento, como os 16 tamanhos entre 9px e 20px que existiam antes."
+      }
+    ],
+    "dos": [
+      "Do ler toda a cor, raio e altura de cabeçalho das variáveis CSS de app.scss. São o contrato entre os dois temas.",
+      "Do escolher o degrau certo da escala de estado pelo papel, não pela cor: -text para texto, o nome cru para ícones e contornos, -tint para fundos.",
+      "Do usar --accent-strong (#1e8460) sempre que houver texto branco sobre verde sólido, e --accent (#32b989) apenas para contornos, anéis, ícones e tintas translúcidas.",
+      "Do separar com contorno de 1px antes de considerar sombra.",
+      "Do descontar var(--header-h) em qualquer contentor de altura total.",
+      "Do manter a caixa alta confinada a 10px e 11px, sempre com espaçamento de letra.",
+      "Do dar overflow-x: auto próprio a cada tabela larga, em vez de deixar a página fazer scroll horizontal."
+    ],
+    "donts": [
+      "Don't usar barra de acento lateral (border-left: 3–4px solid) para marcar estado num cartão ou linha. É o padrão mais reconhecível de interface gerada por IA. As 15 ocorrências que existiam (12 laterais e 3 superiores) foram removidas no passe de polish de 2026-09-10; o código está a zero e assim deve ficar. Estado marca-se com chip, com o contorno inteiro a 1px, ou com a própria cor do texto.",
+      "Don't escrever hex literais em ficheiros .vue. As páginas passaram de 720 literais de cor para 211 no passe de extract de 2026-09-10; o que resta são gradientes, fundos sólidos que carregam texto, e a paleta categórica de AreasPage. Nenhum caso novo se justifica.",
+      "Don't pintar fundos de linha com literais claros — .row-low { background: #fffbeb !important } e .row-zero { background: #fff5f5 !important } produzem faixas quase brancas sobre o tema escuro. Estado de linha usa tinta translúcida da cor de estado.",
+      "Don't introduzir um sexto raio, nem escrever px literal em border-radius.",
+      "Don't alargar o vidro a mais do que um elemento de cada vez, e nunca sem o halo por trás — sem ele, o desfoque não tem o que apanhar e a barra lê-se como uma laje suja.",
+      "Don't carregar uma segunda família tipográfica. Uma voz chega.",
+      "Don't aumentar a sombra no tema escuro para simular elevação. As superfícies escuras separam-se por luminância."
+    ]
+  }
+}

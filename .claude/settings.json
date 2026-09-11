@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"ESLINT EXIT: $?\")",
+      "Bash(git commit -q -m ' *)",
+      "Bash(node -c prisma/seed-consumo-padrao.js)",
+      "Bash(node --check prisma/seed-consumo-padrao.js)",
+      "Bash(node prisma/seed-consumo-padrao.js --dry-run)",
+      "Bash(node prisma/seed-consumo-padrao.js)",
+      "Bash(node prisma/seed-all.js --list)",
+      "Bash(node prisma/seed-all.js --only=protocols,consumo)",
+      "Bash(node prisma/seed-all.js)",
+      "Bash(chmod +x scripts/deploy.sh)",
+      "Bash(bash -n scripts/deploy.sh)",
+      "Bash(./scripts/deploy.sh --help)",
+      "Bash(./scripts/deploy.sh)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('package.json'\\)\\);console.log\\('✅ package.json válido'\\)\")",
+      "Bash(grep -rlE \"#[0-9a-fA-F]{3,6}\\\\b\" src --include=\"*.vue\")",
+      "Bash(grep -rhoE \"#[0-9a-fA-F]{3,6}\\\\b\" src --include=\"*.vue\" --include=\"*.scss\")",
+      "Bash(node /tmp/tokenize.js src)",
+      "Bash(npx sass *)",
+      "Bash(grep -rhoE \"\\(background|background-color\\):\\\\s*#[0-9a-fA-F]{3,6}\\\\b\" src --include=\"*.vue\" --include=\"*.scss\")",
+      "Bash(grep -oE \"#[0-9a-fA-F]{3,6}\")",
+      "Bash(sed -n '/<script setup>/,/<\\\\/script>/p' src/layouts/MainLayout.vue)",
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(git rm *)",
+      "Bash(git revert *)",
+      "Bash(grep -rhoE 'style=\"\\(color|background\\)[^\"]*#[0-9a-fA-F]{3,6}' src --include=\"*.vue\")",
+      "Bash(grep -rlE 'style=\"\\(color|background\\)[^\"]*#[0-9a-fA-F]{3,6}' src --include=\"*.vue\")",
+      "Bash(grep -rhoE 'style=\"\\(color|background\\)[^\"]*?\\(#[0-9a-fA-F]{3,6}\\)' src --include=\"*.vue\")",
+      "Bash(grep -oE \"body\\\\.body--dark[^{,]*\\\\{[^}]{0,120}\" node_modules/quasar/dist/quasar.css)",
+      "Bash(grep -noE \"#[0-9a-fA-F]{3,6}\\\\b\" src/pages/atendimento/medico/IndexPage.vue)",
+      "Bash(sort -t: -k2 -u)",
+      "Bash(curl -s --max-time 5 \"http://localhost:8020/api/consultations\" -H \"Authorization: Bearer x\" -o /dev/null -w \"backend responde: HTTP %{http_code}\\\\n\")",
+      "Bash(ps -p 95441 -o cmd=)",
+      "Bash(timeout 5 curl -s -o /dev/null -w \"GET http://162.35.160.238:3000/api/consultations -> HTTP %{http_code}\\\\n\" http://162.35.160.238:3000/api/consultations -H \"Authorization: Bearer x\")",
+      "Bash(curl -s --max-time 4 -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:8020/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(node -e 'const{PrismaClient}=require\\('\\\\''@prisma/client'\\\\''\\);const p=new PrismaClient\\(\\);p.$queryRawUnsafe\\('\\\\''SELECT column_name FROM information_schema.columns WHERE table_name=\\\\'\\\\''RequestExams\\\\'\\\\'' AND column_name=\\\\'\\\\''materialsUsed\\\\'\\\\'''\\\\''\\).then\\(r=>console.log\\(r.length?'\\\\''✅ coluna materialsUsed existe'\\\\'':'\\\\''❌ ausente'\\\\''\\)\\).finally\\(\\(\\)=>p.$disconnect\\(\\)\\)')"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "health",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "back",
+    "front"
+  ],
+  "packageManager": "npm@11.19.0",
+  "engines": {
+    "node": "^22.22.0 || ^24 || ^26"
+  },
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace=back",
+    "dev:web": "npm run dev --workspace=front",
+    "build": "npm run db:generate && npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "db:generate": "npm run db:generate --workspace=back",
+    "db:migrate": "npm run db:migrate --workspace=back",
+    "seed": "npm run seed --workspace=back",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "deploy": "bash scripts/deploy.sh"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
+    "minimatch@^3.0.0": "^3.1.4",
+    "@types/express": "^4.17.25"
+  }
+}

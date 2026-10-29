@@ -1,0 +1,131 @@
+import { Visit } from "@prisma/client";
+import { VisitRepository } from "../../repositories/visit";
+import {
+  TCreateVisit,
+  TUpdateVisit,
+  createVisit,
+  updateVisit,
+} from "../../validator/visit.validator";
+
+export class VisitController {
+  constructor(private readonly repository: VisitRepository) {}
+  async index(params: {
+    search: string;
+    perPage: string;
+    page: string;
+  }): Promise<{
+    data: Visit[];
+    meta: {
+      totalPages: number;
+      total: number;
+      search?: string;
+      perPage: number;
+      page: number;
+    };
+    message?: string;
+    success?: boolean;
+    statusCode: number;
+  }> {
+    const { page, perPage, search } = params;
+    const data = await this.repository.index({
+      take: Number(perPage) || undefined,
+      skip: Number(perPage) ? Number(page) - 1 : undefined,
+      where: {
+        OR: [
+          {
+            customer: {
+              name: search
+                ? { contains: search, mode: "insensitive" }
+                : { contains: "", mode: "insensitive" },
+            },
+          },
+        ],
+      },
+      include: {
+        customer: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+    const total = await this.repository.count({
+      OR: [
+        {
+          customer: {
+            name: search
+              ? { contains: search, mode: "insensitive" }
+              : { contains: "", mode: "insensitive" },
+          },
+        },
+      ],
+    });
+
+    return {
+      data,
+      meta: {
+        total,
+        totalPages: Math.ceil(total / Number(perPage)),
+        search,
+        page: Number(page),
+        perPage: Number(perPage),
+      },
+      statusCode: 200,
+      message: "OK",
+      success: true,
+    };
+  }
+
+  async show(id: string): Promise<{
+    data: Visit | null;
+    message?: string;
+    success?: boolean;
+    statusCode: number;
+  }> {
+    const data = await this.repository.show({
+      visitWhereUniqueInput: { id },
+      include: { customer: true },
+    });
+    return {
+      data,
+      message: data ? "Sucesso" : "Não encontrado",
+      statusCode: data ? 200 : 404,
+      success: true,
+    };
+  }
+
+  async create(createData: TCreateVisit): Promise<{
+    data: Visit | null;
+    message?: string;
+    success?: boolean;
+    statusCode: number;
+  }> {
+    const payload = createVisit.parse(createData);
+    const data = await this.repository.create(payload);
+    return {
+      data,
+      message: data ? "Sucesso" : "Sem sucesso",
+      statusCode: data ? 201 : 400,
+      success: true,
+    };
+  }
+
+  async update(
+    id: string,
+    updateData: TUpdateVisit
+  ): Promise<{
+    data: Visit | null;
+    message?: string;
+    success?: boolean;
+    statusCode: number;
+  }> {
+    const payload = updateVisit.parse(updateData);
+    const data = await this.repository.update({ id }, payload);
+    return {
+      data,
+      message: data ? "Sucesso" : "Sem sucesso",
+      statusCode: data ? 201 : 400,
+      success: true,
+    };
+  }
+}

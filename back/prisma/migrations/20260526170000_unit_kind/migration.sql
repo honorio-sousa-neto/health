@@ -1,0 +1,1 @@
+ALTER TABLE "UnitOfMeasure" ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'measure';

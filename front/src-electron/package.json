@@ -1,0 +1,10 @@
+{
+  "name": "medicmanager-electron",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "electron": "^42.3.2",
+    "@electron/packager": "^20.3.0"
+  }
+}

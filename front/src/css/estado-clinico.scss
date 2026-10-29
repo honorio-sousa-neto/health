@@ -1,0 +1,108 @@
+// ── Estado clínico: normal / alterado / crítico ──────────────────────────
+//
+// A direcção fixada no PRODUCT.md é a "Banda": a linha inteira é a unidade
+// de sinal, e o estado pinta a faixa toda em vez de pendurar um adorno
+// dentro dela. Num painel de 30 parâmetros com 4 alterados, a quebra de
+// luminância em área grande é o que produz pop-out — a busca deixa de ser
+// serial e passa a uma fixação.
+//
+// O painel é `--surface`, que no tema claro já é #ffffff. Foi essa a razão
+// de a direcção assentar em branco puro e não num cinzento: o verde da
+// marca (#1e8460) dá 4,64:1 sobre branco e apenas 4,36:1 sobre #f6f8fa, e o
+// PRODUCT.md exige WCAG AA. O painel branco preserva o compromisso de marca
+// intacto e melhora todos os rácios.
+//
+// ── O fundo é da clínica, não da interacção ──────────────────────────────
+//
+// Regra permanente: nenhum estado de interacção — hover, foco, selecção,
+// linha alternada — pode reduzir o contraste de um valor clínico ou do seu
+// rótulo. O fundo da linha já transporta significado; se a interacção o
+// alterasse, duas funções ficariam na mesma propriedade e a que perde é a
+// que importa mais.
+//
+// Em linhas com banda o hover exprime-se pelo contorno (--clin-contorno-hover),
+// nunca pelo preenchimento. A consequência para a medição é directa: as
+// superfícies sob a banda são `--surface` e `--surface-2`. A `--surface-3`
+// está fora, porque o app.scss define-a como "campos, hover" e o hover
+// deixou de tocar nestas linhas.
+//
+// ── De onde vêm os valores ───────────────────────────────────────────────
+//
+// Todos calculados, nenhum estimado, contra a pior das duas superfícies com
+// a tinta já composta por cima. As tintas compensam em 11%/15% (claro) e
+// 16%/24% (escuro) o facto de a mesma opacidade percorrer menos distância
+// perceptual sobre branco puro — com estes alfas o pop-out fica em ΔE2000
+// 11,3 (claro) e 21,0 (escuro).
+//
+// Baixar os alfas permitiria um vermelho mais saturado no crítico, mas a
+// troca foi medida e é má: de 24% para 14% no escuro, o texto ganha ΔE 6,5
+// de saturação e a banda perde 36% do pop-out. O pop-out é o que faz quatro
+// linhas saltar num painel de trinta; o tom exacto do vermelho é o canal
+// menos carregado dos quatro (cor, peso, símbolo, texto acessível). Mantêm-se
+// as tintas e desloca-se o texto.
+
+:root {
+  // Bandas — tinta translúcida, nunca preenchimento sólido. É o que permite
+  // à mesma banda funcionar sobre --surface e sobre --surface-2.
+  --clin-banda-alterado:   rgba(221, 107, 32, 0.11);
+  --clin-banda-critico:    rgba(229, 62, 62, 0.15);
+
+  // Texto do valor, verificado sobre a banda respectiva.
+  --clin-texto-normal:     var(--st-ok-text);    // #276749 — 6,49:1
+  --clin-texto-alterado:   var(--st-warn-text);  // #a8491b — 4,94:1 sobre a banda
+
+  // O crítico tem piso próprio de 5,5:1, não 4,5:1. Um valor a 4,5 passa por
+  // acaso: está dentro do erro de arredondamento, e a afinação seguinte de
+  // tinta parte-o sem ninguém dar por isso. O --st-danger-text (#c53030) dá
+  // 4,37:1 aqui e o tom anterior (#c33030) dava 4,37 — ambos reprovavam o
+  // piso. Este é o mesmo vermelho, mais escuro: 5,53:1.
+  --clin-texto-critico:    #a72929;
+
+  // Rótulo e unidade quando estão sobre banda. O --text-muted cai abaixo de
+  // 4,5:1 sobre tinta — sobre superfície passava, sobre tinta deixa de passar.
+  --clin-rotulo-banda:     #5b677b;              // 4,51:1 no pior caso
+
+  // Marca gráfica: ícone e contorno. Degrau gráfico da escala (mín. 3:1),
+  // nunca o degrau de texto — é assim que os ~180 casos de AA reprovada
+  // apareceram da última vez.
+  //
+  // O --st-warn (#dd6b20) dá 2,90:1 sobre a banda alterada e reprova o
+  // degrau gráfico por 0,10. Mesmo laranja, um pouco mais escuro: 3,04:1.
+  // É o mesmo precedente do --clin-texto-critico: quando a escala de estado
+  // não limpa a banda, declara-se aqui o literal com a razão à frente.
+  --clin-marca-alterado:   #d8681f;
+  --clin-marca-critico:    var(--st-danger);     // 3,25:1 sobre a banda crítica
+
+  // Contorno completo de 1px no crítico. Nunca barra lateral: é o padrão
+  // mais reconhecível de interface gerada, e o DESIGN.md bane-o.
+  --clin-contorno-critico: var(--st-danger);
+
+  // Contorno de hover. Afordância, não informação — sem piso WCAG; o critério
+  // é ser perceptível sobre os três fundos possíveis (ΔE 16 a 19).
+  --clin-contorno-hover:   #c3ccc9;
+}
+
+body.body--dark {
+  // As tintas sobem porque, sobre superfície escura, o mesmo alfa percorre
+  // menos distância perceptual. Com 16%/24% o pop-out fica em ΔE 15,1 / 21,0
+  // — mais forte do que no tema claro, não mais fraco.
+  --clin-banda-alterado:   rgba(237, 137, 54, 0.16);
+  --clin-banda-critico:    rgba(252, 129, 129, 0.24);
+
+  --clin-texto-normal:     var(--st-ok-text);    // #6ed7a8 — 9,24:1
+  --clin-texto-alterado:   var(--st-warn-text);  // #f0a868 — 6,26:1 sobre a banda
+
+  // #f97f7f dava 4,23:1 sobre a banda crítica: reprovava o piso de 5,5 e
+  // reprovava AA na superfície elevada. Este é o mesmo vermelho, mais claro:
+  // 5,57:1. Sobre fundo escuro, mais claro é mais legível — o tom perde
+  // saturação mas o valor ganha os três canais restantes intactos.
+  --clin-texto-critico:    #fba5a5;
+
+  --clin-rotulo-banda:     #a0aca8;              // 4,53:1 no pior caso
+
+  // No escuro a escala de estado limpa a banda sem ajuda: 4,90:1 e 4,34:1.
+  --clin-marca-alterado:   var(--st-warn);
+  --clin-marca-critico:    var(--st-danger);
+
+  --clin-contorno-hover:   #414f4a;
+}

@@ -1,0 +1,1087 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Exemption {
+    id          String    @id @default(uuid()) @db.Uuid
+    code        String
+    description String
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    Service     Service[]
+}
+
+enum EntryOrOut {
+    ENTRY
+    OUT
+    EXIT
+    TRANSFER
+}
+
+model TransactionCashier {
+    id        String     @id @default(uuid()) @db.Uuid
+    type      EntryOrOut
+    amount    Float
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+}
+
+enum TypeIntern {
+    single
+    familiar
+    pregnancy
+}
+
+model Intern {
+    id              String           @id @default(uuid()) @db.Uuid
+    name            String           @unique
+    amount          Float
+    internTax       Float?
+    examBoundary    Float?
+    type            TypeIntern?
+    customerInterns CustomerIntern[]
+    services        ServiceIntern[]
+    aggregations    Json?
+    createdAt       DateTime         @default(now())
+    updatedAt       DateTime         @updatedAt
+    deletedAt       DateTime?
+}
+
+model ServiceIntern {
+    id         String    @id @default(uuid()) @db.Uuid
+    category   Category  @relation(fields: [categoryId], references: [id])
+    internId   String?   @db.Uuid
+    intern     Intern?   @relation(fields: [internId], references: [id])
+    categoryId String    @db.Uuid
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    deletedAt  DateTime?
+}
+
+model CustomerIntern {
+    id         String     @id @default(uuid()) @db.Uuid
+    customer   Customer?  @relation(fields: [customerId], references: [id])
+    customerId String?    @db.Uuid
+    intern     Intern     @relation(fields: [internId], references: [id])
+    internId   String     @db.Uuid
+    startDate  DateTime
+    endDate    DateTime
+    members    Customer[] @relation("member")
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
+    deletedAt  DateTime?
+}
+
+enum Stage {
+    ATTENDANCE
+    SCREENING
+    EXAM
+    EXAM_RESULT
+    CONSULTING_CLINIC
+    CONSULTING_STOMATOLOGY
+    CONCLUDE
+}
+
+model Consultation {
+    id            String           @id @default(uuid()) @db.Uuid
+    doctor        User?            @relation(name: "doctorConsultations", fields: [userId], references: [id])
+    userId        String?          @db.Uuid
+    labUser       User?            @relation(name: "labConsultations", fields: [labUserId], references: [id])
+    labUserId     String?          @db.Uuid
+    description   String?
+    diagnosis     String?
+    observation   Observation[]
+    internment    Internment?      @relation(fields: [internmentId], references: [id])
+    internmentId  String?          @unique @db.Uuid
+    exams         RequestExams[]
+    status        ObservationStage @default(pending)
+    stage         Stage            @default(SCREENING)
+    screening     Screening?       @relation(fields: [screeningId], references: [id])
+    serviceId     String?          @db.Uuid
+    screeningId   String?          @unique @db.Uuid
+    prescriptions Prescription[]
+    createdAt     DateTime         @default(now())
+    updatedAt     DateTime         @updatedAt
+    deletedAt     DateTime?
+    Ambulatory    Ambulatory[]
+}
+
+enum ObservationStage {
+    pending
+    running
+    done
+}
+
+enum ObservationStatus {
+    PENDING
+    RUNNING
+    FINISHED
+}
+
+model Observation {
+    id             String           @id @default(uuid()) @db.Uuid
+    service        Service          @relation(name: "observation", fields: [serviceId], references: [id])
+    serviceId      String           @db.Uuid
+    description    String?
+    consultationId String?          @db.Uuid
+    consultation   Consultation?    @relation(fields: [consultationId], references: [id])
+    serum          Json?
+    duration       Float?
+    endTime        DateTime?
+    isCompleted    Boolean          @default(false)
+    exams          RequestExams[]
+    paid           Boolean          @default(false)
+    status         ObservationStage @default(pending)
+    createdAt      DateTime         @default(now())
+    updatedAt      DateTime         @updatedAt
+    deletedAt      DateTime?
+}
+
+model Internment {
+    id           String           @id @default(uuid()) @db.Uuid
+    service      Service          @relation(name: "internment", fields: [serviceId], references: [id])
+    serviceId    String           @db.Uuid
+    description  String?
+    consultation Consultation?
+    exams        RequestExams[]
+    status       ObservationStage @default(pending)
+    createdAt    DateTime         @default(now())
+    updatedAt    DateTime         @updatedAt
+    deletedAt    DateTime?
+}
+
+model Surgery {
+    id          String           @id @default(uuid()) @db.Uuid
+    service     Service          @relation(fields: [serviceId], references: [id])
+    serviceId   String           @db.Uuid
+    customer    Customer?        @relation(fields: [customerId], references: [id])
+    customerId  String?          @db.Uuid
+    observation String?
+    paid        Boolean          @default(false)
+    status      ObservationStage @default(pending)
+    createdAt   DateTime         @default(now())
+    updatedAt   DateTime         @updatedAt
+    deletedAt   DateTime?
+}
+
+enum PrescriptionType {
+    AMBULATORY
+    PHARMACY
+}
+
+enum AmbulatoryStatus {
+    CLOSED
+    OPEN
+}
+
+model Ambulatory {
+    id             String           @id @default(uuid()) @db.Uuid
+    consultation   Consultation     @relation(fields: [consultationId], references: [id])
+    from           DateTime?
+    to             DateTime?
+    days           Json?
+    paid           Boolean          @default(false)
+    consultationId String           @db.Uuid
+    status         AmbulatoryStatus @default(OPEN)
+    createdAt      DateTime         @default(now())
+    updatedAt      DateTime         @updatedAt
+    deletedAt      DateTime?
+}
+
+model Prescription {
+    id             String             @id @default(uuid()) @db.Uuid
+    items          PrescriptionItem[]
+    type           PrescriptionType
+    doctor         User               @relation(fields: [userId], references: [id])
+    userId         String             @db.Uuid
+    paid           Boolean            @default(false)
+    consultation   Consultation?      @relation(fields: [consultationId], references: [id])
+    consultationId String?            @db.Uuid
+    ambulatoryPlan AmbulatoryPlan?
+    createdAt      DateTime           @default(now())
+    updatedAt      DateTime           @updatedAt
+    deletedAt      DateTime?
+}
+
+model PrescriptionItem {
+    id             String        @id @default(uuid()) @db.Uuid
+    service        Service       @relation(fields: [serviceId], references: [id])
+    serviceId      String        @db.Uuid
+    dose           String
+    quantity       String
+    frequency      String
+    canal          String
+    duration       Float         @default(0)
+    prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+    prescriptionId String?       @db.Uuid
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+    deletedAt      DateTime?
+}
+
+model AdministrationMedicament {
+    id           String           @id @default(uuid()) @db.Uuid
+    nurse        User?            @relation(fields: [userId], references: [id])
+    userId       String?          @db.Uuid
+    customer     Customer?        @relation(fields: [customerId], references: [id])
+    customerId   String?          @db.Uuid
+    service      Service          @relation(fields: [serviceId], references: [id])
+    serviceId    String           @db.Uuid
+    quantity     String?
+    type         String?
+    isThirdParty Boolean          @default(false)
+    drugs        Json?
+    paid         Boolean          @default(false)
+    status       ObservationStage @default(pending)
+    createdAt    DateTime         @default(now())
+    updatedAt    DateTime         @updatedAt
+    deletedAt    DateTime?
+}
+
+enum Source {
+    PRIMARY
+    SECONDARY
+}
+
+enum ResultTest {
+    GREEN
+    RED
+}
+
+model RequestExams {
+    id             String        @id @default(uuid()) @db.Uuid
+    consultationId String?       @db.Uuid
+    examId         String        @db.Uuid
+    source         Source        @default(PRIMARY)
+    exam           Service       @relation(fields: [examId], references: [id])
+    paid           Boolean       @default(false)
+    result         Json?
+    resultText     String?
+    resultColor    ResultTest?
+    materialsUsed  Json?         // consumo real desta requisição, tal como declarado ao guardar
+    consultation   Consultation? @relation(fields: [consultationId], references: [id])
+    observation    Observation?  @relation(fields: [observationId], references: [id])
+    observationId  String?       @db.Uuid
+    internment     Internment?   @relation(fields: [internmentId], references: [id])
+    internmentId   String?       @db.Uuid
+    customerId     String?       @db.Uuid
+    customer       Customer?     @relation(fields: [customerId], references: [id])
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+    deletedAt      DateTime?
+    concludedAt    DateTime?
+
+    @@unique([consultationId, examId])
+    @@unique([observationId, examId])
+    @@unique([internmentId, examId])
+}
+
+enum Type {
+    P0
+    P25
+    P50
+    P75
+    SI
+    SE
+    SJK
+    CG
+    C
+    G
+    PN
+    O
+    P
+}
+
+model ExaminationRequestForm {
+    id          String       @id @default(uuid()) @db.Uuid
+    requestedBy User         @relation("requestedBy", fields: [doctorId], references: [id])
+    doctorId    String       @db.Uuid
+    madeBy      User?        @relation("madeBy", fields: [analystId], references: [id])
+    analystId   String?      @db.Uuid
+    results     ExamResult[]
+    paid        String[]
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    deletedAt   DateTime?
+}
+
+model ImagiologyRequestForm {
+    id          String    @id @default(uuid()) @db.Uuid
+    paid        Boolean   @default(false)
+    customer    Customer  @relation(fields: [customerId], references: [id])
+    customerId  String    @db.Uuid
+    doctorId    String?   @db.Uuid
+    attendingId String?   @db.Uuid
+    doctor      User?     @relation(fields: [doctorId], references: [id])
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    deletedAt   DateTime?
+}
+
+model Imagiology {
+    id          String    @id @default(uuid()) @db.Uuid
+    name        String
+    description String
+    service     Service   @relation(fields: [serviceId], references: [id])
+    serviceId   String    @unique @db.Uuid
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    deletedAt   DateTime?
+}
+
+model TreatmentObservation {
+    id          String    @id @default(uuid()) @db.Uuid
+    name        String
+    description String
+    service     Service   @relation(fields: [serviceId], references: [id])
+    serviceId   String    @unique @db.Uuid
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    deletedAt   DateTime?
+}
+
+model Hospitalization {
+    id          String    @id @default(uuid()) @db.Uuid
+    name        String
+    description String
+    service     Service   @relation(fields: [serviceId], references: [id])
+    serviceId   String    @unique @db.Uuid
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    deletedAt   DateTime?
+}
+
+model MedicalConsultation {
+    id             String      @id @default(uuid()) @db.Uuid
+    doctorId       String?     @db.Uuid
+    doctor         User?       @relation(fields: [doctorId], references: [id])
+    customerId     String      @db.Uuid
+    customer       Customer    @relation(fields: [customerId], references: [id])
+    screening      Screening?  @relation(fields: [screeningId], references: [id])
+    screeningId    String?     @unique @db.Uuid
+    attendance     Attendance? @relation(fields: [attendanceId], references: [id])
+    attendanceId   String?     @unique @db.Uuid
+    createdAt      DateTime    @default(now())
+    updatedAt      DateTime    @updatedAt
+    deletedAt      DateTime?
+}
+
+enum MedicalConsultationStatus {
+    Canceled
+    InProgress
+    Completed
+    OnScreening
+    OnAttendance
+    ExamReady
+    WaitingExams
+    WaitingScreening
+    WaitingDoctor
+}
+
+enum AttendanceStatus {
+    WAITING
+    IN_SCREENING
+    SCREENED
+    WAITING_DOCTOR
+    IN_CONSULTATION
+    COMPLETED
+    CANCELED
+}
+
+model Attendance {
+    id             String              @id @default(uuid()) @db.Uuid
+    reference      String              @unique
+    customer       Customer            @relation(fields: [customerId], references: [id])
+    customerId     String              @db.Uuid
+    receptionist   User?               @relation("AttendanceReceptionist", fields: [receptionistId], references: [id])
+    receptionistId String?             @db.Uuid
+    service        Service?            @relation(fields: [serviceId], references: [id])
+    serviceId      String?             @db.Uuid
+    status         AttendanceStatus    @default(WAITING)
+    note           String?
+    screening      Screening?
+    consultation   MedicalConsultation?
+    invoices           Invoice[]
+    movimentationStock MovimentationStock[]
+    createdAt          DateTime            @default(now())
+    updatedAt          DateTime            @updatedAt
+    deletedAt          DateTime?
+}
+
+model Visit {
+    id         String    @id @default(uuid()) @db.Uuid
+    customer   Customer  @relation(fields: [customerId], references: [id])
+    customerId String    @db.Uuid
+    service    Json?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    deletedAt  DateTime?
+}
+
+enum Gender {
+    MALE
+    FEMALE
+}
+
+model Symptoms {
+    id        String    @id @default(uuid()) @db.Uuid
+    title     String    @unique
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+}
+
+model Post {
+    id        String    @id @default(uuid()) @db.Uuid
+    title     String
+    userId    String    @db.Uuid
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+}
+
+model User {
+    id                       String                     @id @default(uuid()) @db.Uuid
+    email                    String?
+    username                 String                     @unique
+    phone                    String                     @unique
+    password                 String
+    name                     String
+    nif                      String?                    @unique
+    role                     Role
+    invoices                 Invoice[]
+    examResults              ExamResult[]               @relation("analyst")
+    screening                Screening[]
+    createdAt                DateTime                   @default(now())
+    updatedAt                DateTime                   @updatedAt
+    deletedAt                DateTime?
+    imagiologyRequestForm      ImagiologyRequestForm[]
+    medicalConsultation        MedicalConsultation[]
+    attendancesAsReceptionist  Attendance[]            @relation("AttendanceReceptionist")
+    examinationRequestForm   ExaminationRequestForm[]   @relation("requestedBy")
+    examinationsMade         ExaminationRequestForm[]   @relation("madeBy")
+    Consultation             Consultation[]             @relation("doctorConsultations")
+    labConsultations         Consultation[]             @relation("labConsultations")
+    administrationMedicament AdministrationMedicament[]
+    Prescription             Prescription[]
+    movimentationStock       MovimentationStock[]
+    ambulatorySessionsDone   AmbulatorySession[]
+}
+
+model Insurance {
+    id                 String              @id @default(uuid()) @db.Uuid
+    name               String
+    nif                String
+    address            String?
+    phone              String?
+    customersInsurance CustomerInsurance[]
+    createdAt          DateTime            @default(now())
+    updatedAt          DateTime            @updatedAt
+    deletedAt          DateTime?
+}
+
+model Protocol {
+    id        String     @id @default(uuid()) @db.Uuid
+    name      String
+    value     Float
+    customers Customer[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    deletedAt DateTime?
+}
+
+model CustomerInsurance {
+    id              String    @id @default(uuid()) @db.Uuid
+    customer        Customer  @relation(fields: [customerId], references: [id])
+    customerId      String    @db.Uuid
+    insurance       Insurance @relation(fields: [insuranceId], references: [id])
+    insuranceId     String    @db.Uuid
+    insuranceNumber String?
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+    deletedAt       DateTime?
+}
+
+model Customer {
+    id                       String                     @id @default(uuid()) @db.Uuid
+    identifier               String?
+    name                     String
+    nif                      String?
+    address                  String?
+    phone                    String?
+    source                   String?
+    email                    String?
+    birthday                 DateTime?
+    gender                   Gender?
+    protocolId               String?                    @db.Uuid
+    protocol                 Protocol?                  @relation(fields: [protocolId], references: [id])
+    Partner                  Partner?                   @relation(fields: [partnerId], references: [id])
+    invoices                 Invoice[]
+    partnerId                String?                    @db.Uuid
+    order                    Int?
+    visits                   Visit[]
+    attendances              Attendance[]
+    medicalConsultations     MedicalConsultation[]
+    imagiologiesRequestForm  ImagiologyRequestForm[]
+    intern_insurance         CustomerIntern[]
+    internInsuranceAggregate CustomerIntern?            @relation("member", fields: [customerInternId], references: [id])
+    customersInsurance       CustomerInsurance[]
+    customerInternId         String?                    @db.Uuid
+    createdAt                DateTime                   @default(now())
+    updatedAt                DateTime                   @updatedAt
+    deletedAt                DateTime?
+    Screening                Screening[]
+    surgeries                Surgery[]
+    administrationMedicament AdministrationMedicament[]
+    requestExams             RequestExams[]
+    ambulatoryPlans          AmbulatoryPlan[]
+}
+
+enum TypeItem {
+    SERVICE
+    PRODUCT
+    CONSUMABLE
+}
+
+model UnitOfMeasure {
+    id           String    @id @default(uuid()) @db.Uuid
+    name         String
+    abbreviation String    @unique
+    category     String?
+    kind         String    @default("measure")
+    factor       Float     @default(1)
+    baseUnitId   String?   @db.Uuid
+    baseUnit     UnitOfMeasure?  @relation("UnitConversion", fields: [baseUnitId], references: [id])
+    derivedUnits UnitOfMeasure[] @relation("UnitConversion")
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+
+    materials     Service[]      @relation("MaterialUnit")
+    purchaseItems PurchaseItem[]
+}
+
+model Service {
+    id                       String                     @id @default(uuid()) @db.Uuid
+    name                     String
+    advName                  String?
+    unit_price               Float?
+    cost                     Float?     // custo médio ponderado (em unidade-base), mantido nas compras
+    unitsPerPackage          Float?     // doses por embalagem vendável (ex.: comprimidos por cartela); receita em doses → fatura/stock em embalagens
+
+    tax                      Float?
+    hasIva                   Boolean?
+    category                 Category                   @relation(fields: [categoryId], references: [id])
+    account_code             String?
+    type                     TypeItem                   @default(SERVICE)
+    materialCategory         MaterialCategory?
+    minimumStock             Float?
+    unit                     UnitOfMeasure?             @relation("MaterialUnit", fields: [unitId], references: [id])
+    unitId                   String?                    @db.Uuid
+    status                   StatusService              @default(AVAILABLE)
+    isInput                  Boolean?                   @default(false)
+    typeInput                String?
+    description              String?
+    classificacao            String?
+    discount                 Float?
+    exemptionId              String?                    @db.Uuid
+    exemption                Exemption?                 @relation(fields: [exemptionId], references: [id])
+    invoiceItems             InvoiceItem[]
+    consumables              MaterialOfService[]        @relation("ServiceConsumables")
+    usedInServices           MaterialOfService[]        @relation("ConsumableUsedIn")
+    imagiology               Imagiology?
+    treatmentObservation     TreatmentObservation?
+    Hospitalization          Hospitalization?
+    observation              Observation[]              @relation(name: "observation")
+    internment               Internment[]               @relation(name: "internment")
+    requestExams             RequestExams[]
+    categoryId               String                     @db.Uuid
+    config                   Json?
+    exam                     Exam?
+    quantity                 Decimal?
+    stockId                  String?                    @db.Uuid
+    surgeries                Surgery[]
+    attendances              Attendance[]
+    createdAt                DateTime                   @default(now())
+    updatedAt                DateTime                   @updatedAt
+    deletedAt                DateTime?
+    administrationMedicament AdministrationMedicament[]
+    PrescriptionItem         PrescriptionItem[]
+    PurchaseItem             PurchaseItem[]
+    BatchProduct             BatchProduct[]
+    MovimentationStock       MovimentationStock[]
+    ambulatorySessions       AmbulatorySession[]
+}
+
+
+model BatchProduct {
+    id                 String               @id @default(uuid()) @db.Uuid
+    productId          String               @db.Uuid
+    product            Service              @relation(fields: [productId], references: [id])
+    batch              String
+    quantity           Float
+    expiration         DateTime?
+    locationId         String?              @db.Uuid
+    location           StockLocation?       @relation("BatchLocation", fields: [locationId], references: [id])
+    createdAt          DateTime             @default(now())
+    updatedAt          DateTime             @updatedAt
+    movimentationStock MovimentationStock[]
+
+    @@unique([productId, batch, locationId])
+}
+
+model StockLocation {
+    id          String    @id @default(uuid()) @db.Uuid
+    name        String
+    description String?
+    isDefault   Boolean   @default(false)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    deletedAt   DateTime?
+
+    stockFrom MovimentationStock[] @relation("StockFrom")
+    stockTo   MovimentationStock[] @relation("StockTo")
+    batches   BatchProduct[]       @relation("BatchLocation")
+}
+
+model MovimentationStock {
+    id                    String         @id @default(uuid()) @db.Uuid
+    productId             String         @db.Uuid
+    product               Service        @relation(fields: [productId], references: [id])
+    quantity              Float
+    type                  EntryOrOut     @default(ENTRY)
+    reason                String?
+    description           String?
+    batchProduct          BatchProduct?  @relation(fields: [batchProductId], references: [id])
+    batchProductId        String?        @db.Uuid
+    sourceCategory        Category?      @relation("Source", fields: [sourceCategoryId], references: [id])
+    sourceCategoryId      String?        @db.Uuid
+    destinationCategory   Category?      @relation("Destination", fields: [destinationCategoryId], references: [id])
+    destinationCategoryId String?        @db.Uuid
+    fromLocationId        String?        @db.Uuid
+    fromLocation          StockLocation? @relation("StockFrom", fields: [fromLocationId], references: [id])
+    toLocationId          String?        @db.Uuid
+    toLocation            StockLocation? @relation("StockTo", fields: [toLocationId], references: [id])
+    userId                String?        @db.Uuid
+    user                  User?          @relation(fields: [userId], references: [id])
+    attendanceId          String?        @db.Uuid
+    attendance            Attendance?    @relation(fields: [attendanceId], references: [id])
+    createdAt             DateTime       @default(now())
+    updatedAt             DateTime       @updatedAt
+}
+
+enum MaterialCategory {
+    reagent
+    consumable
+    equipment
+    epi
+    glassware
+    standardSolution
+}
+
+
+model MaterialOfService {
+    service      Service @relation("ServiceConsumables", fields: [serviceId], references: [id])
+    serviceId    String  @db.Uuid
+    consumable   Service @relation("ConsumableUsedIn", fields: [consumableId], references: [id])
+    consumableId String  @db.Uuid
+    quantity     Decimal
+
+    @@id([consumableId, serviceId])
+}
+
+model Section {
+    id        String    @id @default(uuid()) @db.Uuid
+    name      String
+    exams     Exam[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+}
+
+enum Input {
+    TEXT
+    SELECT
+}
+
+model Exam {
+    id         String       @id @default(uuid()) @db.Uuid
+    name       String
+    reference  String?
+    isHeader   Boolean
+    input      Input        @default(TEXT)
+    options    Json?
+    subItens   Json?
+    service    Service      @relation(fields: [serviceId], references: [id])
+    serviceId  String       @unique @db.Uuid
+    section    Section?     @relation(fields: [sectionId], references: [id])
+    sectionId  String?      @db.Uuid
+    createdAt  DateTime     @default(now())
+    updatedAt  DateTime     @updatedAt
+    deletedAt  DateTime?
+    ExamResult ExamResult[]
+}
+
+model ExamResult {
+    id                       String                  @id @default(uuid()) @db.Uuid
+    exam                     Exam                    @relation(fields: [examId], references: [id])
+    examId                   String                  @db.Uuid
+    analystId                String?                 @db.Uuid
+    analyst                  User?                   @relation(fields: [analystId], references: [id], name: "analyst")
+    result                   Json?
+    createdAt                DateTime                @default(now())
+    examinationRequestForm   ExaminationRequestForm? @relation(fields: [examinationRequestFormId], references: [id])
+    examinationRequestFormId String?                 @db.Uuid
+}
+
+enum Criticality {
+    GREEN
+    ORANGE
+    RED
+}
+
+enum StatusScreening {
+    PENDING
+    RUNNING
+    FINISHED
+    CANCELED
+}
+
+model Screening {
+    id                       String               @id @default(uuid()) @db.Uuid
+    weight                   String?
+    height                   String?
+    isDrinker                Boolean?
+    isSmoker                 Boolean?
+    isChronicPatient         Boolean?
+    chronicIll               String?
+    oxygen                   Criticality?
+    fever                    Criticality?
+    bloodPressure            String?
+    bloodPressureDescription String?
+    breathingRate            Criticality?
+    heartbeatRate            String?
+    customer                 Customer             @relation(fields: [customerId], references: [id])
+    customerId               String               @db.Uuid
+    nurseId                  String?              @db.Uuid
+    nurse                    User?                @relation(fields: [nurseId], references: [id])
+    attendance               Attendance?          @relation(fields: [attendanceId], references: [id])
+    attendanceId             String?              @unique @db.Uuid
+    createdAt                DateTime             @default(now())
+    updatedAt                DateTime             @updatedAt
+    deletedAt                DateTime?
+    status                   StatusScreening      @default(PENDING)
+    medicalConsultation      MedicalConsultation?
+    Consultation             Consultation[]
+}
+
+// model Observation {
+//     id         String        @id @default(uuid()) @db.Uuid
+//     serviceId  String?       @db.Uuid
+//     service    Service?      @relation(fields: [serviceId], references: [id])
+//     customer   Customer?     @relation(fields: [customerId], references: [id])
+//     customerId String?       @db.Uuid
+//     status     InvoiceStatus @default(POR_PAGAR)
+//     nurseId    String        @db.Uuid
+//     nurse      User          @relation(fields: [nurseId], references: [id])
+//     createdAt  DateTime      @default(now())
+//     updatedAt  DateTime      @updatedAt
+//     deletedAt  DateTime?
+// }
+
+enum ExamResultInput {
+    RADIO
+    SELECT
+    TEXT
+}
+
+
+model Payment {
+    id        String    @id @default(uuid()) @db.Uuid
+    name      String
+    code      String
+    Invoice   Invoice[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+}
+
+model InvoiceItem {
+    id        String  @id @default(uuid()) @db.Uuid
+    serviceId String  @db.Uuid
+    invoiceId String  @db.Uuid
+    quantity  Int
+    price     Float
+    discount  Float
+    total     Float
+    config    Json?
+    service   Service @relation(fields: [serviceId], references: [id])
+    invoice   Invoice @relation(fields: [invoiceId], references: [id])
+
+    @@index([serviceId, invoiceId], name: "invoice-item")
+}
+
+model Invoice {
+    id              String        @id @default(uuid()) @db.Uuid
+    customerId      String?       @db.Uuid
+    customer        Customer?     @relation(fields: [customerId], references: [id])
+    type            InvoiceType
+    paymentId       String?       @db.Uuid
+    payment         Payment?      @relation(fields: [paymentId], references: [id])
+    serie           String
+    amount_received Float?
+    co_payment      Float?
+    invoiceItems    InvoiceItem[]
+    reasonInssuance String?
+    change          Float?
+    isAmbulatory    Boolean       @default(false)
+    reference       String
+    emission_date   DateTime?     @default(now())
+    expiry_date     DateTime?
+    hash64          String
+    hash4           String
+    total           Float?
+    asNormal        Boolean       @default(false)
+    status          InvoiceStatus
+    discount        Float?
+    userId          String        @db.Uuid
+    user            User          @relation(fields: [userId], references: [id])
+    invoiceId       String?       @unique @db.Uuid
+    insuranceId     String?
+    protocolId      String?
+    partnerId       String?
+    internId        String?
+    attendanceId    String?       @db.Uuid
+    attendance      Attendance?   @relation(fields: [attendanceId], references: [id])
+    invoiceSource   Invoice?      @relation("Origin", fields: [invoiceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    invoiceCurrent  Invoice?      @relation("Origin")
+    createdAt       DateTime      @default(now())
+    updatedAt       DateTime      @updatedAt
+    deletedAt       DateTime?
+}
+
+model BankAccount {
+    id        String     @id @default(uuid()) @db.Uuid
+    name      String
+    iban      String
+    number    String
+    Company   Company?   @relation(fields: [companyId], references: [id])
+    companyId String?    @db.Uuid
+    Deposit   Deposit[]
+    purchases Purchase[]
+}
+
+model Company {
+    id             String        @id @default(uuid()) @db.Uuid
+    name           String
+    nif            String
+    email          String?
+    phone          String?
+    address        String?
+    bank           String?
+    iban           String?
+    account_number String?
+    banks          BankAccount[]
+    tax_ii         Float?
+    logo           String?
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+    deletedAt      DateTime?
+}
+
+model Partner {
+    id        String     @id @default(uuid()) @db.Uuid
+    name      String
+    nif       String
+    phone     String?
+    address   String?
+    email     String?
+    customer  Customer[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    deletedAt DateTime?
+}
+
+model Supplier {
+    id        String     @id @default(uuid()) @db.Uuid
+    name      String
+    nif       String
+    phone     String?
+    address   String?
+    email     String?
+    purchases Purchase[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    deletedAt DateTime?
+}
+
+enum StatusService {
+    AVAILABLE
+    UNAVAILABE
+}
+
+enum InvoiceType {
+    RC
+    FT
+    FR
+    ND
+    NC
+    PP
+}
+
+enum InvoiceStatus {
+    POR_PAGAR
+    PAGO
+    FINAL
+}
+
+enum Measure {
+    Mililitro
+    Litro
+    Unidade
+    Par
+}
+
+model Drugs {
+    id        String    @id @default(uuid()) @db.Uuid
+    name      String
+    tax       Float
+    amount    Float
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+}
+
+model Category {
+    id                       String               @id @default(uuid()) @db.Uuid
+    name                     String
+    category                 Category?            @relation("SubCategories", fields: [categoryId], references: [id])
+    subCategories            Category[]           @relation("SubCategories")
+    categoryId               String?              @db.Uuid
+    createdAt                DateTime             @default(now())
+    updatedAt                DateTime             @updatedAt
+    deletedAt                DateTime?
+    Service                  Service[]
+    ServiceIntern            ServiceIntern[]
+    MovimentationStockSource MovimentationStock[] @relation("Source")
+    MovimentationStock       MovimentationStock[] @relation("Destination")
+}
+
+enum Role {
+    admin
+    nurse
+    attendant
+    analyst
+    doctor
+    financial
+    techLab
+    chiefLab
+    techNursian
+    inventory
+}
+
+enum TransactionType {
+    ADD
+    SUBTRACT
+}
+
+model Flow {
+    id          String     @id @default(uuid()) @db.Uuid
+    destination String
+    description String
+    amount      Float
+    type        EntryOrOut @default(ENTRY)
+    createdAt   DateTime   @default(now())
+}
+
+model PurchaseItem {
+    id               String         @id @default(uuid()) @db.Uuid
+    Purchase         Purchase?      @relation(fields: [purchaseId], references: [id])
+    purchaseId       String?        @db.Uuid
+    quantity         Float
+    unit             UnitOfMeasure? @relation(fields: [unitId], references: [id])
+    unitId           String?        @db.Uuid
+    conversionFactor Float          @default(1)
+    price            Float?
+    product          Service        @relation(fields: [productId], references: [id])
+    productId        String         @db.Uuid
+    createdAt        DateTime       @default(now())
+    batch            String?
+    expiration       DateTime?
+}
+
+model Purchase {
+    id            String         @id @default(uuid()) @db.Uuid
+    Supplier      Supplier?      @relation(fields: [supplierId], references: [id])
+    supplierId    String?        @db.Uuid
+    code          String?
+    // Data da factura do fornecedor. `createdAt` continua a ser o momento do
+    // registo: são coisas diferentes e a ordem do custo médio depende desta.
+    date          DateTime?
+    items         PurchaseItem[]
+    other         String?
+    BankAccount   BankAccount?   @relation(fields: [bankAccountId], references: [id])
+    bankAccountId String?        @db.Uuid
+    bank          String?
+    amount        Float
+    invoice       String?
+    createdAt     DateTime       @default(now())
+    deletedAt     DateTime?
+}
+
+model Deposit {
+    id            String      @id @default(uuid()) @db.Uuid
+    bank          BankAccount @relation(fields: [bankAccountId], references: [id])
+    bankAccountId String      @db.Uuid
+    amount        Float
+    createdAt     DateTime    @default(now())
+    deletedAt     DateTime?
+}
+
+
+model Notification {
+    id          String   @id @default(uuid()) @db.Uuid
+    title       String
+    message     String
+    type        String
+    patientName String?
+    reference   String?
+    room        String
+    readBy      String[] @default([])
+    createdAt   DateTime @default(now())
+}
+
+model AmbulatoryPlan {
+    id             String              @id @default(uuid()) @db.Uuid
+    prescriptionId String              @unique @db.Uuid
+    customerId     String              @db.Uuid
+    customer       Customer            @relation(fields: [customerId], references: [id])
+    prescription   Prescription        @relation(fields: [prescriptionId], references: [id])
+    sessions       AmbulatorySession[]
+    createdAt      DateTime            @default(now())
+    updatedAt      DateTime            @updatedAt
+}
+
+model AmbulatorySession {
+    id        String          @id @default(uuid()) @db.Uuid
+    planId    String          @db.Uuid
+    serviceId String          @db.Uuid
+    number    Int
+    day       Int             @default(1)
+    timeOfDay Int             @default(1)
+    plan      AmbulatoryPlan  @relation(fields: [planId], references: [id])
+    service   Service         @relation(fields: [serviceId], references: [id])
+    doneAt    DateTime?
+    doneById  String?         @db.Uuid
+    doneBy    User?           @relation(fields: [doneById], references: [id])
+    createdAt DateTime        @default(now())
+}

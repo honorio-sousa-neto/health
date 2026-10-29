@@ -48,11 +48,15 @@ O que o distingue de um ERP genérico ou de um prontuário isolado: o percurso c
 
 ## Capabilities and Constraints
 
-**Stack (já decidida pelo código existente):** Vue 3 (Composition API) + Quasar v2 + Vite, Pinia (45+ stores), Vue Router 4, Axios, Socket.IO, ApexCharts, PDFMake. Backend Node/TypeScript + Express + Prisma + PostgreSQL, validação Zod, relatórios ExcelJS/PDFMake.
+**Stack (já decidida pelo código existente):** Vue 3 (Composition API) + Quasar v2 + Vite (Quasar CLI 3), Pinia 3 (45+ stores), Vue Router 5, Axios, Socket.IO, ApexCharts, PDFMake. Backend Node/TypeScript + Express + Prisma + PostgreSQL, validação Zod, relatórios ExcelJS/PDFMake.
 
 **Domínios cobertos:** atendimento (recepção, triagem, médico, exames, imagiologia, vacinação, cirurgia, internamento, observação, ambulatório), pacientes, utilizadores, emissão de documentos, caixa, fluxo, depósitos, balanço, serviços, produtos, consumíveis, categorias, preçário, inventário (saldo, entradas, saídas, transferências, histórico, lotes, departamentos), compras, fornecedores, protocolos, seguradoras externas e internas, parceiros, grupos, relatórios por área e financeiros.
 
-**Escala do domínio:** ~60 modelos Prisma, 56+ módulos de rotas no backend, ~40 secções de páginas no frontend. Qualquer decisão de design tem de sobreviver a esta superfície — padrões que só funcionam em três ecrãs não servem.
+**Escala do domínio:** ~60 modelos Prisma, 56+ módulos de rotas no backend, **138 ecrãs roteados** no frontend (medido em 2026-09-11 avaliando `front/src/router/routes.js` e percorrendo a árvore de rotas aninhadas). Qualquer decisão de design tem de sobreviver a esta superfície — padrões que só funcionam em três ecrãs não servem.
+
+**Superfície real vs. ficheiros — há código morto, e é para remover.** `front/src/pages/` tem 393 ficheiros `.vue`, mas só 227 são alcançáveis a partir de rotas ou layouts: **166 (42%) não têm caminho nenhum até eles.** Descartado como explicação: zero `defineAsyncComponent`, zero `import()` dinâmico fora do router, zero registo global de componentes, e o único `<component :is>` está ele próprio num ficheiro órfão. Existem ainda 10 ecrãs em duplicado, distinguidos apenas pela capitalização (`IndexPage.vue` / `index.vue`, `EditPage.vue` / `edit.vue`), e uma colisão de rota em `/atendimento/recepcao/pedidos-exame`, declarada por dois componentes — o segundo nunca é alcançável por URL.
+
+Confirmado pelo dono do produto em 2026-09-11: **é código morto e removê-lo é trabalho legítimo.** O que conta como superfície do produto são os 138 ecrãs roteados, não os 393 ficheiros. Qualquer estimativa de esforço de redesenho parte dos 138.
 
 **Inventário:** todo o stock passa por um serviço central — FEFO/lote por local, custo médio, anulação de compra. Movimentos são `MovimentationStock` sobre `StockLocation` e `BatchProduct`.
 
@@ -63,7 +67,12 @@ O que o distingue de um ERP genérico ou de um prontuário isolado: o percurso c
 
 ## Brand Commitments
 
-**Nada é vinculativo.** Confirmado pelo dono do produto: nem o logo (`front/src/assets/logo.png`, `logo.jpg`) nem o verde primário `#32b989` (`front/src/css/quasar.variables.scss`) são compromissos de identidade. São estado actual de implementação, não promessa — trabalho visual futuro pode substituí-los.
+**O verde é compromisso.** Confirmado pelo dono do produto em 2026-09-11, revendo a posição anterior: a paleta adoptada deixa de ser substituível e trabalho futuro parte dela em vez de a reabrir. São dois valores, com papéis que não se trocam:
+
+- `#32b989` — o verde da marca. Contornos, anéis de foco, ícones e tintas translúcidas. Dá 2,49:1 com branco, por isso **nunca carrega texto branco**.
+- `#1e8460` — a variante para sólidos com texto branco por cima (4,64:1). É `$primary` do Quasar em `front/src/css/quasar.variables.scss`.
+
+**O logo continua não vinculativo.** `front/src/assets/logo.png` e `logo.jpg` são estado de implementação, não promessa; trabalho de identidade pode substituí-los. Esta decisão não foi reaberta em 2026-09-11 — mantém-se como estava registada.
 
 O nome **Clínica Alfavida** e o nome de produto **MedicManager** (`front/package.json`) são os que estão em uso. A língua do produto é português de Angola.
 
@@ -72,7 +81,8 @@ O nome **Clínica Alfavida** e o nome de produto **MedicManager** (`front/packag
 - **Logo real:** `front/src/assets/logo.png` e `logo.jpg` (não vinculativos, mas reais).
 - **Ilustrações existentes:** `front/src/assets/medics.svg`, `welcome.svg`.
 - **Dados de preçário reais:** ficheiros `.xlsx` na raiz do repositório — `classificacao-servicos.xlsx` e as tabelas de receitas por área (ecografia, estomatologia, internamento, laboratório, observação, pequenas cirurgias, radiologia, serologia).
-- **Certificação AGT confirmada:** o texto correcto é o do backend — «Processado por programa validado nº 355/AGT/2023 FacilitaSoft (3.1.1)» (`back/src/controllers/report-new/index.ts`). O texto do frontend em `front/src/utils/reports/print.js` («n31.1/AGT20 KambaSoft (1.0.1)») está **desactualizado e é um defeito a corrigir**, não uma variante.
+- **Certificação AGT confirmada:** «Processado por programa validado nº 355/AGT/2023 FacilitaSoft (3.1.1)». Está idêntico, carácter a carácter, no backend (`back/src/controllers/report-new/index.ts`) e no frontend (`front/src/utils/reports/print.js:78`). *O defeito aqui registado até 2026-09-11 — o frontend com «n31.1/AGT20 KambaSoft (1.0.1)» — está corrigido; verificado por comparação directa dos dois ficheiros.*
+- **Levantamento de ecrãs:** `docs/redesign/ecrans.md` — os 138 ecrãs roteados com ficheiro, rota, nome clínico e classificação de densidade, extraído do router e não da árvore de ficheiros.
 - **Ausências que não podem ser fabricadas:** não há testemunhos, casos de estudo, números de adopção, benchmarks, imprensa, preços de licenciamento nem promessas de SLA. Nenhum trabalho futuro pode inventá-los.
 
 ## Product Principles
@@ -85,6 +95,26 @@ O nome **Clínica Alfavida** e o nome de produto **MedicManager** (`front/packag
 
 ## Accessibility & Inclusion
 
-Nenhuma norma formal (WCAG ou outra) foi estabelecida como requisito — **decisão em aberto**.
+**WCAG 2.1 nível AA é requisito.** Decidido em 2026-09-11, fechando o que estava em aberto. A norma é agora o critério objectivo de quem trabalhar no sistema: contraste verificável em vez de julgamento caso a caso, nos dois temas.
 
-Requisito de produto confirmado, esse sim: o sistema é lido em ecrãs pequenos e de baixa resolução, em máquinas antigas. Contraste, tamanho mínimo de texto e alvos de toque/clique têm de aguentar essas condições — não como conformidade abstracta, mas porque é o hardware real da clínica.
+A decisão é possível porque o trabalho já lá chegou em boa parte — a escala de estado tem três degraus precisamente para que texto, elemento gráfico e fundo tenham cada um o seu rácio, e os seis degraus de texto foram corrigidos para passar AA sobre superfície.
+
+Dois requisitos de produto sustentam-na e valem por si, independentemente da norma:
+
+- **O hardware é o alvo real.** O sistema é lido em ecrãs pequenos e de baixa resolução, em máquinas antigas. Contraste, tamanho mínimo de texto e alvos de toque/clique têm de aguentar essas condições — não por conformidade abstracta, mas porque é o hardware da clínica.
+- **Texto pequeno é risco clínico, não densidade.** Existe um piso absoluto de 12px e o corpo trabalha a 14px. Um ecrã que precise de descer abaixo do piso para caber está a pedir menos colunas, não menos tamanho — num sistema onde se lê uma dose, isso não é negociável.
+
+**Dívida conhecida contra esta norma:** restam 5 sítios onde o verde da marca (`#32b989`) é fundo sólido com texto branco, a 2,49:1. A correcção é trocar para `#1e8460`, e muda a aparência desses ecrãs. Está identificada, não corrigida.
+
+## Restrições clínicas (não negociáveis)
+
+- A distinção normal/alterado é sempre redundante: cor + peso + símbolo. Nunca só cor.
+- Intervalos de referência visíveis junto ao valor, não em tooltip.
+- Densidade é uma virtude. Nunca separar listas de parâmetros em cards espaçados.
+- Alinhamento numérico à direita, tabular-nums, unidades em coluna própria.
+- Sem motion não pedido pelo utilizador. Motion só para mostrar o que mudou.
+- Português europeu em toda a interface.
+- Sem dependências novas sem aprovação explícita.
+
+## Direção
+- Banda

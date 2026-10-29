@@ -1,33 +1,65 @@
-# ── Dependências ─────────────────────────────────────────────────────────
+# Dependências de todos os workspaces (incluindo Electron)
 node_modules/
 
-# ── Builds ───────────────────────────────────────────────────────────────
+# Builds, Quasar e caches de ferramentas
 dist/
 build/
 .quasar/
+.vite/
+.cache/
+*.tsbuildinfo
 
-# ── Ambiente (segredos) ──────────────────────────────────────────────────
-# O front/.gitignore não cobria .env; este cobre os dois lados.
+# Testes e cobertura
+coverage/
+.nyc_output/
+__pycache__/
+*.py[cod]
+
+# Variáveis de ambiente; manter exemplos versionáveis
 .env
 .env.*
 !.env.example
+!.env.*.example
 
-# ── Sistema operativo / editores ─────────────────────────────────────────
-.DS_Store
-Thumbs.db
-*.swp
-.idea/
+# Segredos e certificados privados
+*.key
+*.cert
+*.pem
+*.p12
+*.pfx
 
-# ── Registos ─────────────────────────────────────────────────────────────
+# Dados persistentes, backups e credenciais do deploy
+private/
+*.dump
+*.dump.gz
+*.sql.gz
+/back/public/
+/back/database/
+
+# Metadados dos antigos repositórios e deploys locais
+/.legacy-git/
+.vercel/
+
+# Artefactos Cordova e Capacitor
+/front/src-cordova/platforms/
+/front/src-cordova/plugins/
+/front/src-cordova/www/
+/front/src-capacitor/www/
+
+# Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# ── Backend ──────────────────────────────────────────────────────────────
-# back/ tem repositório git próprio (branch homolog, com histórico).
-# Fica de fora deste, para não o transformar em submódulo por acidente.
-back/
-
-# front/ tem repositório git próprio (branch homolog, remote GitLab).
-front/
+# Sistema operativo e ficheiros temporários de editores
+.DS_Store
+Thumbs.db
+.thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+*.suo
+*.ntvs*
+*.njsproj

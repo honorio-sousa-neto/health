@@ -1,0 +1,2806 @@
+@import "./estado-clinico.scss";
+
+// ── Tokens de tema ───────────────────────────────────────────────────────
+// As cores de superfície, contorno e texto passam por estas variáveis, para
+// que o tema escuro seja uma troca de valores e não uma segunda folha de
+// estilos. As cores de marca (verde, azul, vermelho) ficam de fora: lêem-se
+// bem nos dois temas.
+:root {
+  // ── Herança do tema pelos controlos nativos ────────────────────────────
+  // O que o CSS da aplicação não pinta — o miolo de um checkbox, o calendário
+  // de um `input[type=date]`, a lista de um `<select>`, as barras de
+  // deslocamento, o fundo do documento antes de haver conteúdo — é desenhado
+  // pelo browser, e o browser decide a partir daqui. Sem isto, o tema escuro
+  // tinha buracos claros em sítios que nenhuma regra alcança.
+  //
+  // O valor efectivo é escrito no elemento raiz por `iniciarTema()`, porque
+  // só o JS sabe a preferência guardada e o estado "auto". Esta declaração é
+  // a base declarativa; a inline do JS vence-a, como deve.
+  color-scheme: light;
+
+  // A Regra dos Dois Verdes aplica-se aqui como em todo o lado: o miolo de um
+  // checkbox marcado é preenchimento sólido com um sinal claro por cima, por
+  // isso leva o verde profundo. O #32b989 daria 2,49:1 com branco.
+  accent-color: var(--accent-strong);
+  caret-color: var(--accent-strong);
+
+  --surface:        #ffffff;  // cartões, gavetas, cabeçalhos de tabela
+  --surface-2:      #fafbfc;  // superfície ligeiramente destacada
+  --surface-3:      #f7f8fc;  // campos, hover
+  // A página desce para longe do painel branco. Antes era o mesmo valor do
+  // --surface-3 e dava 1,06:1 contra o painel: com a sombra removida, o painel
+  // deixava de se ler como painel em ecrã fraco. A 1,18:1 lê-se pelo valor da
+  // superfície, que é a regra 1 — elevação comunica-se por valor, não por sombra.
+  --page-bg:        #e9edec;
+
+  --border:         #f0f1f5;
+  --border-soft:    #f3f4f6;
+  --border-strong:  #e2e8f0;
+  // Fronteira de controlo — campo, botão fantasma, selector. A WCAG exige-lhe
+  // 3:1, ao contrário dos separadores acima, que são decorativos e não têm
+  // requisito. Token próprio e não um --border-strong mais escuro porque esse
+  // é usado em 42 ficheiros, a maioria como separador: escurecê-lo mudava o
+  // aspecto de quarenta ecrãs que ninguém pediu para tocar.
+  --border-control: #7e8784;
+
+  // Topo da escala de superfície: o que flutua por cima de tudo. No tema claro
+  // o branco já é o valor mais alto; no escuro é o mais claro dos três. Nomeado
+  // por papel e não por tom, porque é o papel que se mantém entre os temas.
+  --camada-flutuante: var(--surface);
+  --btn-destrutiva-fg: #ffffff;      // sobre #c53030 → 5,47:1
+
+  --text:           #1a202c;  // títulos
+  --text-2:         #2d3748;  // corpo
+  --text-3:         #4a5568;
+  // Os dois valores anteriores (#67758b e #68738a) foram medidos só contra
+  // --surface. Sobre --surface-3 davam 4,40 e 4,49, e contra a página nova
+  // desciam a 3,96 e 4,04. Estes limpam as quatro superfícies: 4,51 e 4,53.
+  --text-muted:     #5f6c80;  // legendas
+  --text-faint:     #616b81;  // rótulos e placeholders
+  --text-disabled:  #d1d5db;
+
+  --shadow:         rgba(0, 0, 0, 0.10);
+  --shadow-soft:    rgba(0, 0, 0, 0.07);
+
+  // Acentos — o verde é o $primary da marca
+  --accent:         #32b989;
+  // Verde mais profundo para superfícies sólidas com texto branco por cima:
+  // o #32b989 da marca só dá 2,5:1 com branco, este dá 4,6:1 (WCAG AA).
+  --accent-strong:  #1e8460;
+  --accent-soft:    rgba(50, 185, 137, 0.10);
+  --accent-2:       #8b7cf6;  // roxo, para séries secundárias em gráficos
+  --danger:         var(--st-danger-text);
+
+  // ── Escala de estado ───────────────────────────────────────────────────
+  // Três degraus por família, porque os três papéis têm requisitos de
+  // contraste diferentes: texto precisa de 4,5:1, gráfico (ícone, barra,
+  // contorno de 1px) precisa de 3:1, e o fundo é tinta translúcida.
+  //
+  // Antes existia só o degrau de texto (--chip-*), e as páginas resolviam os
+  // outros dois com literais. O resultado foi o inverso do pretendido: os
+  // valores gráficos acabaram a pintar texto, e ~180 usos reprovavam AA.
+  //
+  // Os sólidos são os próprios literais que as páginas já usavam — não
+  // estavam errados, estavam no papel errado.
+  --st-info:          #3182ce;  --st-info-text:   #2b6cb0;
+  --st-ok:            #1e8460;  --st-ok-text:     #276749;
+  --st-warn:          #dd6b20;  --st-warn-text:   #a8491b;
+  --st-danger:        #e53e3e;  --st-danger-text: #c53030;
+  --st-purple:        #805ad5;  --st-purple-text: #553c9a;
+  // O teal era o único degrau de texto que a página nova fazia reprovar
+  // (4,26). Escurecido o mínimo para limpar as quatro superfícies: 4,80.
+  --st-teal:          #0d9488;  --st-teal-text:   #297173;
+
+  --st-info-tint:     rgba(49, 130, 206, 0.10);
+  --st-ok-tint:       rgba(50, 185, 137, 0.10);
+  --st-warn-tint:     rgba(221, 107, 32, 0.10);
+  --st-danger-tint:   rgba(229, 62, 62, 0.10);
+  --st-purple-tint:   rgba(128, 90, 213, 0.10);
+  --st-teal-tint:     rgba(13, 148, 136, 0.10);
+
+  // --chip-* era, e continua a ser, o degrau de texto desta escala.
+  --chip-info:      var(--st-info-text);
+  --chip-ok:        var(--st-ok-text);
+  --chip-warn:      var(--st-warn-text);
+  --chip-purple:    var(--st-purple-text);
+
+  // Navegação: a barra é uma laje opaca e o item activo marca-se por tinta,
+  // não por preenchimento sólido. Ver `.nav-item-active` mais abaixo.
+  --nav-bg:         #ffffff;
+  // O item activo na linguagem "Banda": tinta na linha inteira, texto neutro.
+  // 14% dá ΔE 9,0 contra a barra — lê-se como seleccionado sem competir com
+  // um valor clínico, que é o que a mesma tinta significa do outro lado do
+  // ecrã. Sólido com texto branco, brilho e pílula saíram todos.
+  --nav-active-tint: rgba(50, 185, 137, 0.14);
+
+  // ── Escala tipográfica ─────────────────────────────────────────────────
+  // Seis degraus, sem meios-pixels, com piso absoluto de 12px. Antes eram 16
+  // tamanhos entre 9px e 20px, e 57% do texto da aplicação ficava a 12px ou
+  // menos — num sistema lido em turnos longos, em ecrãs de baixa resolução,
+  // onde ler mal uma dose tem consequências.
+  --fs-label:       12px;  // rótulos, cabeçalhos de tabela, metadados, chips
+  --fs-body:        14px;  // corpo: células, navegação, campos, menus
+  --fs-title:       16px;  // nomes, títulos de secção, ênfase
+  --fs-section:     18px;  // subtítulos de página
+  --fs-heading:     20px;  // título de página
+  --fs-display:     24px;  // números de destaque
+
+  // A entrelinha estava declarada em 4% das regras com font-size; o resto
+  // herdava o que o Quasar desse. Estes dois valores cobrem os dois casos.
+  --lh-tight:       1.3;   // títulos e rótulos de uma linha
+  --lh-body:        1.5;   // corpo, células de tabela, texto corrido
+
+  // Forma — raios generosos e campos em pílula.
+  // --r-sm é o raio mais usado da aplicação (159 ocorrências nas páginas,
+  // mais do que qualquer outro): existia de facto muito antes de existir
+  // como token. Os 6px, 7px e 10px avulsos resolvem-se todos aqui.
+  --r-sm:           8px;
+  --r-card:         18px;
+  --r-panel:        14px;
+  --r-control:      12px;
+  --r-pill:         999px;
+  // Medidas da barra lateral. A goteira de 24 de cada lado deixa 208 de
+  // coluna de conteúdo nos 256; no rail tudo se centra no eixo dos 72.
+  --sidebar-w:      256px;
+  --rail-w:         72px;
+  --sidebar-gutter: 24px;
+
+  // Densidade como token de ordem superior. A altura de linha das listas
+  // pendura-se aqui em vez de estar escrita em cada tabela, para o modo
+  // compacto ser uma troca de valor e não uma segunda folha de estilos.
+  --row-h:          44px;
+  --nav-row-h:      40px;
+
+  // O anel de foco era `0 0 0 3px` — uma sombra, e portanto fora pela regra 1.
+  // `outline` faz o mesmo trabalho, não ocupa espaço no layout, segue o raio do
+  // elemento e é o que os leitores de ecrã e o modo de alto contraste esperam.
+  // Fica como par de valores para as regras o aplicarem com `outline:`.
+  --ring-w:         2px;
+
+  // ── Ritmo de espaçamento ───────────────────────────────────────────────
+  // Existia como afirmação no DESIGN.md e nunca como token: 56% dos 2129
+  // valores de padding/margin/gap da aplicação estavam fora dele. Estes seis
+  // degraus são o ritmo, agora com nome. Nada do que já existe muda por isto
+  // — é acrescento; a conversão faz-se por ecrã, quando o ecrã for tocado.
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 28px;
+
+  // ── Pesos ──────────────────────────────────────────────────────────────
+  // 603 declarações literais em cinco valores, sem token nenhum. O peso é um
+  // dos três canais redundantes da codificação clínica, por isso precisa de
+  // nome tanto como a cor.
+  --fw-regular: 400;
+  --fw-medio:   500;
+  --fw-semi:    600;
+  --fw-forte:   700;
+  --fw-maximo:  800;
+}
+
+// `:where()` mantém a especificidade a zero: a densidade define valores, não
+// vence regras. Quem quiser sobrepor-se a isto não precisa de !important.
+:where([data-densidade="compacta"]) {
+  --row-h:     34px;
+  --nav-row-h: 36px;
+}
+
+:where([data-densidade="folgada"]) {
+  --row-h:     52px;
+  --nav-row-h: 44px;
+}
+
+// Paleta escura inspirada na referência: pretos com um ligeiro desvio para o
+// verde, superfícies elevadas por luminância (não por sombra) e contornos
+// quase impercetíveis.
+body.body--dark {
+  // O par da declaração em `:root`. Aqui cobre os controlos dentro do corpo;
+  // o fundo do documento e as barras de deslocamento dependem do elemento
+  // raiz, que é onde o `iniciarTema()` escreve.
+  color-scheme: dark;
+
+  // Sobre fundo escuro o sinal dentro do checkbox é escuro, e quem carrega o
+  // contraste é o preenchimento: aqui o verde da marca lê a 7,01:1 e o verde
+  // profundo apenas a 3,76:1. Os papéis trocam-se com o tema, como sempre.
+  accent-color: var(--accent);
+  caret-color: var(--accent);
+
+  --surface:        #151b19;  // cartões
+  --surface-2:      #1a221f;  // superfície elevada dentro do cartão
+  --surface-3:      #202a26;  // campos, hover
+  --page-bg:        #0d1211;  // fundo da aplicação
+
+  --border:         #23302b;
+  --border-soft:    #1e2a26;
+  --border-strong:  #2d3d37;
+  --border-control: #68776f;
+  --camada-flutuante: var(--surface-3);
+  --btn-destrutiva-fg: var(--page-bg);  // sobre #f87171 → 6,83:1
+
+  --text:           #f2f5f4;
+  --text-2:         #dde5e2;
+  --text-3:         #bcc7c3;
+  --text-muted:     #97a5a0;
+  --text-faint:     #8b9a94;  // 4,9:1 sobre --surface (WCAG AA)
+  --text-disabled:  #5b6b65;
+
+  --shadow:         rgba(0, 0, 0, 0.55);
+  --shadow-soft:    rgba(0, 0, 0, 0.40);
+
+  --accent-soft:    rgba(50, 185, 137, 0.14);
+
+  // A escala de estado inverte-se: sobre superfície escura o degrau de texto
+  // é o tom claro, e o sólido é o tom médio. Verificado a 4,5:1 e 3:1 sobre
+  // --surface (#151b19).
+  --st-info:          #63b3ed;  --st-info-text:   #8ec5f0;
+  --st-ok:            #32b989;  --st-ok-text:     #6ed7a8;
+  --st-warn:          #ed8936;  --st-warn-text:   #f0a868;
+  --st-danger:        #fc8181;  --st-danger-text: #f87171;
+  --st-purple:        #a78bfa;  --st-purple-text: #bda9f7;
+  --st-teal:          #38b2ac;  --st-teal-text:   #7fd4cd;
+
+  --st-info-tint:     rgba(99, 179, 237, 0.14);
+  --st-ok-tint:       rgba(50, 185, 137, 0.14);
+  --st-warn-tint:     rgba(237, 137, 54, 0.14);
+  --st-danger-tint:   rgba(252, 129, 129, 0.14);
+  --st-purple-tint:   rgba(167, 139, 250, 0.14);
+  --st-teal-tint:     rgba(56, 178, 172, 0.14);
+
+  // A barra acompanha o fundo da página, para não se ler como uma laje
+  // mais clara. A separação fica a cargo do contorno.
+  --nav-bg:         #0d1211;
+  // Menos alfa do que no claro, e não mais: sobre uma barra quase preta o
+  // mesmo verde percorre mais distância perceptual. 10% dá ΔE 10,1, par do
+  // ΔE 9,0 do tema claro.
+  --nav-active-tint: rgba(50, 185, 137, 0.10);
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────
+.sidebar-drawer .q-drawer__content {
+  display: flex;
+  flex-direction: column;
+  background: var(--nav-bg);
+  border-right: 1px solid var(--border);
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    display: none;
+  }
+}
+
+// ── A barra, de cima a baixo ─────────────────────────────────────────────
+// Uma coluna: identidade, pesquisa, régua, navegação que rola, régua, rodapé
+// ancorado ao fim. As réguas são full-bleed até às arestas — não respeitam a
+// goteira, porque marcam fronteira entre secções e não entre conteúdos.
+.sb {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.sb-regua {
+  flex-shrink: 0;
+  height: 1px;
+  margin: 0;
+  border: none;
+  background: var(--border);
+}
+
+.sb-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--sp-2) 10px var(--sp-3);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { width: 0; background: transparent; }
+}
+
+// ── Topo: marca e identidade ─────────────────────────────────────────────
+.sb-topo {
+  flex-shrink: 0;
+  padding: var(--sp-4) var(--sidebar-gutter) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.sb-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sb-marca__sinal {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+
+.sb-marca__nome {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-id {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+// Era um gradiente por papel, nove deles. Superfície elevada e iniciais.
+.sb-id__avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  color: var(--text-2);
+  font-size: var(--fs-title);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.sb-id__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sb-id__nome {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-id__servico {
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Pesquisa ─────────────────────────────────────────────────────────────
+.sb-pesquisa {
+  flex-shrink: 0;
+  margin: 0 var(--sidebar-gutter) var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 10px;
+  min-height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  border: 1px solid var(--border-control);
+  color: var(--text-muted);
+
+  &:focus-within { border-color: var(--accent); }
+}
+
+.sb-pesquisa__campo {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-body);
+}
+
+.sb-pesquisa--rail {
+  margin: 0 0 var(--sp-4);
+  justify-content: center;
+  padding: 0;
+  min-height: 0;
+  background: none;
+  border: none;
+}
+
+.sb-pesquisa--painel {
+  margin: var(--sp-2);
+}
+
+// ── Rodapé ───────────────────────────────────────────────────────────────
+.sb-rodape {
+  flex-shrink: 0;
+  padding: var(--sp-3) var(--sidebar-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.sb-rodape__accoes {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.sb-rodape--rail {
+  padding: var(--sp-3) 0;
+
+  .sb-rodape__accoes {
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+
+  .sb-rede { justify-content: center; }
+}
+
+.sb-rede {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  color: var(--st-warn-text);
+}
+
+.sb-rede--caido { color: var(--st-danger-text); }
+
+.sb-rede__gira { animation: sb-gira 1.1s linear infinite; }
+
+@keyframes sb-gira { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-rede__gira { animation: none; }
+}
+
+// ── Botões de ícone da barra ─────────────────────────────────────────────
+.sb-icon-btn {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { background: var(--surface-3); color: var(--text-2); }
+}
+
+.sb-icon-btn--sair:hover {
+  background: var(--st-danger-tint);
+  color: var(--st-danger-text);
+}
+
+// ── Controlo de colapso, sobre a aresta direita ──────────────────────────
+.sb-colapso {
+  position: absolute;
+  top: 70px;
+  right: -12px;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-control);
+  background: var(--nav-bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover { color: var(--text-2); border-color: var(--text-muted); }
+}
+
+// ── Abrir a barra em ecrã estreito ───────────────────────────────────────
+// Só existe abaixo do breakpoint da gaveta, que é onde ela fica fechada.
+.sb-abrir {
+  display: none;
+  position: fixed;
+  top: var(--sp-3);
+  left: var(--sp-3);
+  z-index: 2000;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-control);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+@media (max-width: 500px) {
+  .sb-abrir { display: flex; }
+}
+
+// ── Section labels ───────────────────────────────────────────────────────
+.nav-section-label {
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+  font-weight: 700;
+  color: var(--text-faint);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 18px 12px 5px;
+}
+
+// Section header com linha decorativa
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 12px 5px;
+  gap: 8px;
+
+  span {
+    font-size: var(--fs-label);
+    font-weight: 700;
+    line-height: var(--lh-tight);
+    color: var(--text-faint);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-soft);
+  }
+}
+
+// ── Nav items ────────────────────────────────────────────────────────────
+.nav-item {
+  border-radius: var(--r-sm) !important;
+  min-height: 40px !important;
+  color: var(--text-3) !important;
+  margin-bottom: 1px;
+  transition: background 0.18s ease, color 0.18s ease;
+  position: relative;
+
+  .q-item__section--avatar {
+    min-width: 34px;
+    padding-right: 6px;
+  }
+
+  // O ícone herda a cor do item. Tinha tom próprio (--text-faint) e por isso
+  // precisava de ser repintado em cada estado — três regras para dizer o que
+  // `currentColor` diz sozinho.
+  .q-icon {
+    color: currentColor;
+    font-size: 19px;
+    transition: transform 0.18s ease;
+  }
+
+  .q-item__label {
+    font-size: var(--fs-body);
+    font-weight: 500;
+    line-height: var(--lh-body);
+  }
+
+  &:hover {
+    background: var(--surface-3) !important;
+    color: var(--text-2) !important;
+
+    .q-icon {
+      transform: translateX(1px);
+    }
+  }
+}
+
+// Item activo: tinta de acento na linha inteira e peso, e nada mais.
+//
+// Era pílula sólida verde com texto branco e um brilho de 14px por baixo. O
+// brilho é gradiente e sai pelas regras 2 e 10; a pílula sólida faz da
+// navegação o elemento mais colorido do ecrã, que é o oposto do princípio —
+// a cor pertence aos dados, e num sistema clínico o verde tem de significar
+// "dentro do intervalo", não "estás nesta página".
+//
+// O texto fica neutro de propósito. O acento vive na tinta, que é onde já
+// conta como um dos três usos autorizados. Sobre a tinta clara o
+// --accent-strong daria 4,25:1 e reprovaria AA; o --text dá 14,43:1.
+.nav-item-active {
+  background: var(--nav-active-tint) !important;
+  color: var(--text) !important;
+
+  .q-item__label {
+    font-weight: 600 !important;
+  }
+
+  // O item activo está imóvel: o ícone não acompanha o deslocamento do hover,
+  // porque não há para onde navegar a partir de onde já se está.
+  &:hover {
+    background: var(--nav-active-tint) !important;
+    color: var(--text) !important;
+
+    .q-icon {
+      transform: none;
+    }
+  }
+}
+
+// ── Page background ───────────────────────────────────────────────────────
+// Usa o token próprio: no tema escuro o fundo é a camada MAIS escura, e os
+// cartões destacam-se por cima. Com --surface-3 ficava ao contrário.
+.page-bg {
+  background: var(--page-bg);
+}
+
+.page-content {
+  padding: 16px;
+  // Contexto de posicionamento para o que as páginas ancorem dentro dele.
+  // Vinha do bloco do halo, que precisava de empilhar o conteúdo por cima do
+  // gradiente; o halo saiu, isto fica, porque há páginas a contar com ele.
+  position: relative;
+  // Sem barra de topo não há nada a descontar. `dvh` e não `vh` porque em
+  // móvel a barra do browser entra e sai, e `vh` conta sempre com ela fora —
+  // a página ficava mais alta que o ecrã e ganhava scroll de janela.
+  height: 100dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+// ── Data page layout ──────────────────────────────────────────────────────
+.data-page {
+  padding: 0;
+  min-height: 100%;
+}
+
+.data-toolbar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 20px;
+}
+
+// ── Cards grid ────────────────────────────────────────────────────────────
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.data-card {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+
+  // Ao passar o rato o cartão subia 2px e ganhava uma sombra de 28px. Sem
+  // sombra, a resposta é a mesma que em toda a aplicação: a superfície e o
+  // contorno. Também deixa de saltar — deslocar um alvo debaixo do cursor
+  // obriga a mão a corrigir o que já tinha acertado.
+  &:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+  }
+}
+
+.card-body {
+  padding: 22px 16px 16px;
+  flex: 1;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.card-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  // Era um gradiente de #32b989 para #26a69a com iniciais brancas por cima.
+  // Saía pela regra 2 de qualquer forma, mas também reprovava AA: os dois
+  // extremos dão 2,49:1 e 2,73:1 com branco. O verde profundo dá 4,64:1.
+  // É a mesma dívida que o PRODUCT.md regista em cinco sítios; este era um
+  // sexto, e escapou à contagem por ser gradiente e não preenchimento liso.
+  background: var(--accent-strong);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.card-name {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text);
+  line-height: var(--lh-tight);
+  max-width: 100%;
+}
+
+.card-sub {
+  font-size: var(--fs-label);
+  line-height: var(--lh-body);
+  color: var(--text-faint);
+  margin-top: 4px;
+  max-width: 100%;
+}
+
+.card-actions {
+  border-top: 1px solid var(--border-soft);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+// ── State boxes (loading / empty) ─────────────────────────────────────────
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 12px;
+}
+
+.state-text {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-faint);
+}
+
+.state-icon {
+  color: var(--text-disabled);
+}
+
+// Falha de carregamento não é lista vazia: o ícone di-lo antes do texto.
+.state-icon--erro {
+  color: var(--st-warn);
+}
+
+.state-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: var(--surface-3);
+    color: var(--text-2);
+    border-color: var(--text-disabled);
+  }
+
+  &:focus-visible {
+    outline: var(--ring-w) solid var(--accent);
+    outline-offset: 2px;
+    border-color: var(--accent);
+  }
+}
+
+// ── Select / Input fields (.fi) ───────────────────────────────────────────
+.fi-popup {
+  background: var(--camada-flutuante) !important;
+  border-radius: var(--r-panel) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border-control) !important;
+  overflow: hidden;
+
+  .q-item {
+    padding: 9px 14px;
+    min-height: 38px;
+    color: var(--text-2);
+    transition: background 0.12s;
+
+    &.q-item--active,
+    &.q-manual-focusable--focused {
+      background: rgba(50, 185, 137, 0.14) !important;
+      color: #32b989 !important;
+    }
+
+    &:hover {
+      background: var(--surface-3) !important;
+    }
+
+    .q-item__label {
+      font-size: var(--fs-body);
+      line-height: var(--lh-body);
+      color: var(--text-2);
+    }
+  }
+
+  .fi-parent-tag {
+    font-size: var(--fs-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--surface-3);
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+}
+
+// ── Form pages ────────────────────────────────────────────────────────────
+.form-card {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 28px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+// ── Notify ───────────────────────────────────────────────────────────────
+.notify-card {
+  border-radius: var(--r-control) !important;
+  box-shadow: none !important;
+  background: var(--camada-flutuante) !important;
+  border: 1px solid var(--border-control) !important;
+  padding: 4px 4px 4px 0 !important;
+  min-width: 300px;
+  max-width: 380px;
+
+  .q-notification__icon {
+    font-size: 22px !important;
+    margin: 0 12px 0 14px !important;
+  }
+
+  .q-notification__message {
+    font-size: var(--fs-body) !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+    line-height: var(--lh-body) !important;
+  }
+
+  .q-notification__progress {
+    height: 3px !important;
+    border-radius: 0 0 12px 12px !important;
+    opacity: 0.5;
+  }
+
+  // O estado já é legível pelo ícone e pela barra de progresso; a barra
+  // lateral colorida era redundante além de ser o tell mais reconhecível.
+  &--ok {
+    .q-notification__icon { color: var(--chip-ok) !important; }
+    .q-notification__progress { background: var(--chip-ok) !important; }
+  }
+
+  &--fail {
+    .q-notification__icon { color: var(--danger) !important; }
+    .q-notification__progress { background: var(--danger) !important; }
+  }
+
+  // Rede: degrau "aviso" da escala de estado, não o vermelho de erro. O
+  // pedido pode nem ter chegado ao servidor — não é uma operação falhada.
+  &--rede {
+    .q-notification__icon { color: var(--st-warn) !important; }
+  }
+}
+
+// ── Tema escuro: componentes do Quasar ───────────────────────────────────
+// O Quasar traz o seu próprio tema escuro, mas assenta em cinzentos que não
+// combinam com a paleta da aplicação. Aqui alinham-se os componentes com os
+// tokens, e corrigem-se os pontos onde o Quasar assume fundo branco.
+body.body--dark {
+  background: var(--page-bg);
+  color: var(--text-2);
+
+  .q-card,
+  .q-menu,
+  .q-dialog__inner > div,
+  .q-table,
+  .q-table__container,
+  .q-expansion-item__content,
+  .q-tooltip {
+    background: var(--surface);
+    color: var(--text-2);
+  }
+
+  .q-tooltip {
+    background: var(--surface-3);
+    border: 1px solid var(--border-strong);
+  }
+
+  // Campos de formulário
+  .q-field__control {
+    color: var(--text-2);
+  }
+  .q-field__native,
+  .q-field__input,
+  .q-field__prefix,
+  .q-field__suffix {
+    color: var(--text) !important;
+  }
+  .q-field__label,
+  .q-field__marginal {
+    color: var(--text-faint);
+  }
+  .q-placeholder::placeholder {
+    color: var(--text-faint);
+  }
+
+  // Campos nativos usados em vários formulários, excluindo os que o Quasar
+  // renderiza dentro dos seus próprios campos.
+  input[type="text"]:not(.q-field__native):not(.q-field__input),
+  input[type="number"]:not(.q-field__native):not(.q-field__input),
+  input[type="date"]:not(.q-field__native):not(.q-field__input),
+  input[type="datetime-local"]:not(.q-field__native):not(.q-field__input),
+  input[type="search"]:not(.q-field__native):not(.q-field__input),
+  textarea:not(.q-field__native):not(.q-field__input),
+  select:not(.q-field__native) {
+    background: var(--surface-3);
+    color: var(--text);
+    border-color: var(--border-strong);
+
+    &::placeholder { color: var(--text-faint); }
+  }
+
+  // Tabelas
+  .q-table thead th {
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+  .q-table tbody td {
+    border-color: var(--border);
+  }
+  .q-table tbody tr:hover > td {
+    background: var(--surface-3);
+  }
+
+  // Separadores e listas
+  .q-separator { background: var(--border); }
+  .q-item { color: var(--text-2); }
+  .q-item__label--caption { color: var(--text-faint); }
+
+  // Barras de deslocamento
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  // Notificações mantêm o fundo da superfície
+  .q-notification { background: var(--surface) !important; color: var(--text-2); }
+}
+
+// ── Linguagem visual global ──────────────────────────────────────────────
+// Forma e comportamento aplicam-se aos dois temas; a cor vem dos tokens.
+// Fica no fim do ficheiro para vencer as regras anteriores sem !important
+// onde não é preciso.
+
+// Cartões e painéis
+.q-card {
+  border-radius: var(--r-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+// Diálogos
+// ── Camadas flutuantes ───────────────────────────────────────────────────
+// Diálogos, menus, popups de selecção e notificações. Aqui a sombra não era
+// decoração: dizia que aquilo está POR CIMA e não DENTRO, e removê-la sem
+// substituto deixava o painel a boiar sem ancoragem sobre conteúdo denso.
+//
+// O substituto são duas coisas, e ambas são precisas. O contorno passa ao
+// degrau de controlo (3:1), que é o único contorno do sistema que se lê sobre
+// qualquer coisa que esteja por baixo. E o fundo sobe ao topo da escala de
+// superfície do tema — no claro é o branco, no escuro é o valor mais claro
+// dos três. Elevação por valor de superfície, que é o que a regra 1 manda.
+.q-dialog__inner > div,
+.q-menu {
+  border-radius: var(--r-panel) !important;
+  border: 1px solid var(--border-control);
+  background: var(--camada-flutuante);
+  box-shadow: none !important;
+}
+
+// ── Campos de formulário ─────────────────────────────────────────────────
+// O aspecto de referência: preenchimento escuro, contorno subtil, cantos
+// arredondados e anel de foco verde. Aplica-se a outlined, filled, standout
+// e borderless, para não ser preciso mexer campo a campo.
+.q-field {
+  .q-field__control {
+    border-radius: 0;
+    transition: border-color 0.18s ease;
+  }
+
+  // Planos, em qualquer variante do Quasar: a variante deixa de alterar o
+  // desenho, como já acontecia antes — muda é o desenho para que aponta.
+  &.q-field--outlined .q-field__control,
+  &.q-field--filled .q-field__control,
+  &.q-field--standout .q-field__control,
+  &.q-field--borderless .q-field__control {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-control);
+    border-radius: 0;
+  }
+
+  &:not(.q-field--disabled):hover .q-field__control {
+    // --text-disabled dá 1,47:1 no tema claro: o hover não se via.
+    border-bottom-color: var(--text-muted);
+  }
+
+  &.q-field--focused .q-field__control {
+    border-bottom-color: var(--accent);
+  }
+
+  &.q-field--error .q-field__control {
+    border-bottom-color: var(--st-danger);
+  }
+
+  .q-field__native,
+  .q-field__input { color: var(--text); }
+
+  .q-field__label,
+  .q-field__marginal,
+  .q-field__prefix,
+  .q-field__suffix { color: var(--text-faint); }
+}
+
+// Campos de pesquisa em pílula, como na referência
+.q-field--rounded .q-field__control,
+.field-pill .q-field__control {
+  border-radius: var(--r-pill);
+  padding: 0 16px;
+}
+
+// Cerca de 25 campos usam standout="bg-teal-8 text-white" (ou bg-teal,
+// bg-blue-8, bg-primary): cores fixas da paleta do Quasar que ignoram o tema
+// e pintam o campo de escuro só ao focar. O foco passa a ser o mesmo dos
+// restantes campos — contorno verde e anel. As classes do Quasar trazem
+// !important, daí a repetição aqui.
+.q-field--standout.q-field--highlighted .q-field__control {
+  // Sem caixa: com os campos planos, o `standout` do Quasar deixa de ter um
+  // fundo para destacar. O foco é a régua, como em todos os outros.
+  background: transparent !important;
+  border-bottom-color: var(--accent);
+
+  .q-field__native,
+  .q-field__input,
+  .q-field__prefix,
+  .q-field__suffix,
+  .q-icon { color: var(--text) !important; }
+
+  .q-field__label { color: var(--text-faint) !important; }
+}
+
+// Inputs nativos usados fora do Quasar.
+//
+// O `:not(.q-field__native):not(.q-field__input)` não é zelo a mais: o Quasar
+// renderiza um `<input>` verdadeiro dentro de cada campo, e sem a exclusão
+// esta regra pintava-lhe uma caixa por dentro da própria caixa do campo — era
+// o rectângulo fantasma que aparecia atrás do valor e ao lado do sufixo.
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.q-field__native):not(.q-field__input),
+textarea:not(.q-field__native):not(.q-field__input),
+select:not(.q-field__native) {
+  border-radius: var(--r-control);
+  background: var(--surface-3);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  outline: none;
+  transition: border-color 0.18s ease, outline-color 0.18s ease;
+
+  // O --text-disabled dá 1,39:1 sobre o campo: era texto invisível. A linha 53
+  // deste ficheiro sempre disse que placeholders são papel do --text-faint;
+  // eram as três regras que apontavam ao token errado.
+  &::placeholder { color: var(--text-faint); }
+
+  &:focus-visible {
+    border-color: var(--accent);
+    outline: var(--ring-w) solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+// ── Foco de teclado ──────────────────────────────────────────────────────
+// Um contorno, em todo o lado, e o acento num dos seus três usos autorizados.
+// `:focus-visible` e não `:focus` para não aparecer ao clicar com o rato — o
+// anel serve quem navega por teclado e é ruído para quem não navega.
+// Vem depois dos componentes para vencer sem !important.
+:focus-visible {
+  outline: var(--ring-w) solid var(--accent);
+  outline-offset: 2px;
+}
+
+// ── Botões ───────────────────────────────────────────────────────────────
+.q-btn {
+  border-radius: var(--r-control);
+  text-transform: none;
+  font-weight: 600;
+  letter-spacing: 0;
+
+  &.q-btn--round { border-radius: var(--r-pill); }
+  &.q-btn--rounded { border-radius: var(--r-pill); }
+}
+
+// Separador de tabelas e listas
+.q-separator { background: var(--border); }
+
+// ── Ajustes específicos do tema escuro ───────────────────────────────────
+body.body--dark {
+  // Superfícies elevam-se por luminância, não por sombra pesada
+
+  // Botões translúcidos ganham contraste sobre fundo escuro
+  .q-btn--flat:hover,
+  .q-btn--outline:hover { background: var(--surface-3); }
+
+  // Barra de deslocamento discreta
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: var(--r-pill);
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-clip: content-box; background-color: var(--text-disabled); }
+}
+
+// ── Rail ─────────────────────────────────────────────────────────────────
+// Em modo mini o cabeçalho de grupo dá lugar a um traço curto
+.nav-mini-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 14px 8px;
+}
+
+.q-drawer--mini {
+  // Tudo centrado no eixo do rail: a goteira desaparece e o que fica é o
+  // símbolo, o avatar e os ícones, alinhados na mesma vertical.
+  .sb-topo { padding: var(--sp-4) 0 var(--sp-3); align-items: center; }
+  .sb-marca { justify-content: center; }
+  .sb-id { justify-content: center; }
+  .sb-id__avatar { width: 40px; height: 40px; font-size: var(--fs-body); }
+  .sb-nav { padding: var(--sp-2) var(--sp-2) var(--sp-3); }
+
+  .nav-item {
+    justify-content: center;
+    padding: 0;
+    min-height: 44px !important;
+
+    .q-item__section--avatar {
+      min-width: 0;
+      padding: 0;
+      justify-content: center;
+    }
+  }
+}
+
+// ── Tabelas ──────────────────────────────────────────────────────────────
+// Um só aspecto para as q-table de toda a aplicação: contentor arredondado,
+// cabeçalho assente numa superfície própria, linhas separadas por contornos
+// subtis e realce ao passar o rato.
+.q-table__container,
+.q-table__card {
+  border-radius: var(--r-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.q-table {
+  thead th {
+    background: var(--surface-2);
+    color: var(--text-3);
+    font-size: var(--fs-label);
+    font-weight: 700;
+    line-height: var(--lh-tight);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+
+  tbody td {
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--text-2);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 14px 16px;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr {
+    transition: background 0.14s ease;
+    &:hover > td { background: var(--surface-3); }
+  }
+}
+
+.q-table__top,
+.q-table__bottom {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-muted);
+  padding: 12px 16px;
+}
+
+// ── Tabelas construídas à mão ────────────────────────────────────────────
+// O padrão dominante (páginas de inventário e relatórios) usa estas classes.
+// Passam a partilhar o aspecto das q-table.
+.prod-table,
+.tbl {
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.pt-head,
+.report-list-head,
+.tbl-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.ph-cell,
+.tbl-head-cell {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  color: var(--text-3);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.pt-row,
+.report-row,
+.tbl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  transition: background 0.14s ease;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--surface-3); }
+}
+
+.pr-cell,
+.tbl-cell {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-2);
+  min-width: 0;
+}
+
+.pr-name,
+.tbl-cell--strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+// ── Numerais tabulares ───────────────────────────────────────────────────
+//
+// Sem `tabular-nums` o "1" da Inter é mais estreito que o "8", e uma coluna
+// de trinta números deixa de alinhar: unidades, dezenas e centenas escorregam
+// umas sobre as outras e a comparação vertical — que é a razão de a coluna
+// existir — deixa de funcionar. É um defeito que o browser traz por omissão e
+// que nenhum sistema de design herda de graça.
+//
+// Três declarações, e não sessenta e oito ficheiros, porque o alinhamento é
+// propriedade do contentor e não de cada valor. Todo o número da aplicação
+// passa por uma destas três portas.
+//
+// A propriedade só toca em dígitos: numa célula de texto não faz nada, e num
+// rótulo com um número no meio ("Sala 3") corrige o número e deixa o resto.
+// Por isso aplica-se à célula inteira, sem ter de separar o que é valor.
+
+// ── Porquê uma declaração e não três ─────────────────────────────────────
+//
+// O plano previa três portas: tabelas do Quasar, tabelas à mão, e uma classe
+// `.num` para o resto. Medido depois de escritas, cobriam 16 dos 61 ficheiros
+// que formatam números — 26%. Os outros 45 renderizam valores fora de
+// qualquer tabela (cartões de caixa, resumos de balanço, linhas de factura,
+// doses de prescrição) e só ficariam cobertos aplicando `.num` a cada um, que
+// é o trabalho ficheiro a ficheiro que se queria evitar.
+//
+// Herdar do `body` cobre os 61 numa linha. O argumento habitual contra —
+// cifras tabulares são mais largas e menos agradáveis em texto corrido — quase
+// não se aplica aqui: neste sistema quase todo o número é quantidade, dose,
+// preço ou contagem, e o texto corrido resume-se às notas clínicas. Onde a
+// proporcional for melhor, `.num-prosa` desliga-a, que é o mesmo gesto que o
+// `ParameterRow` já faz nos resultados qualitativos.
+body {
+  font-variant-numeric: tabular-nums;
+}
+
+// A saída: texto corrido onde a largura fixa dos dígitos estorva mais do que
+// alinha. Deliberada e rara — se estiver a aparecer em muitos sítios, é sinal
+// de que a regra global está errada e não de que faltam excepções.
+.num-prosa {
+  font-variant-numeric: normal;
+}
+// ── Campos ───────────────────────────────────────────────────────────────
+//
+// Planos: sem caixa, sem preenchimento, só uma régua por baixo. O rótulo
+// flutua, que é o que a caixa não deixava fazer — a 46px de altura com o
+// valor a 16px, o rótulo não tinha para onde subir e encostava ao contorno.
+// Sem caixa, a altura deixa de ser disputada e o rótulo assenta acima do
+// valor com folga.
+//
+// Por isso também não se usa `dense` nestes campos: o `dense` do Quasar
+// encolhe precisamente a altura de que o rótulo flutuante precisa.
+.fi {
+  // A régua é a `border-bottom` do próprio controlo, herdada do bloco
+  // `.q-field` acima. O `position: relative` é o que faz o traço de foco
+  // assentar nela: sem ele, o `::after` procura o ascendente posicionado
+  // seguinte — que é o `.q-field` inteiro, linha de apoio incluída — e o
+  // traço aparecia uns quarenta pixels abaixo do campo.
+  .q-field__control {
+    position: relative;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  // O traço de foco assenta por cima da régua, por isso engrossa de 1 para
+  // 2px sem empurrar o conteúdo um pixel para cima.
+  .q-field__control::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    // `top: auto` é obrigatório: o Quasar declara `top: 0` neste mesmo
+    // pseudo-elemento e, com `top` e `bottom` ambos definidos e uma altura
+    // fixa, o `top` ganha — o traço de foco aparecia acima do campo.
+    top: auto;
+    bottom: -1px;
+    height: 2px;
+    background: transparent;
+  }
+
+  // Num campo plano, um contorno rectangular à volta seria a caixa que
+  // acabámos de tirar: o foco é a régua a engrossar e a ganhar o acento,
+  // com o rótulo a acompanhar.
+  &.q-field--focused .q-field__control::after { background: var(--accent); }
+  &.q-field--error .q-field__control::after { background: var(--st-danger); }
+
+  .q-field__label {
+    color: var(--text-muted);
+    font-weight: var(--fw-medio);
+  }
+
+  &.q-field--focused .q-field__label { color: var(--accent); }
+
+  .q-field__native,
+  .q-field__input {
+    font-size: var(--fs-title);
+    line-height: var(--lh-tight);
+    color: var(--text);
+    font-weight: var(--fw-medio);
+  }
+
+  .q-field__marginal { color: var(--text-muted); }
+  .q-field__bottom { padding: 6px 0 0; font-size: var(--fs-label); line-height: var(--lh-tight); }
+  .q-select__dropdown-icon { color: var(--text-muted); }
+}
+
+// O campo principal do formulário — quase sempre o nome. É o que identifica o
+// registo e o que se lê primeiro ao abrir a ficha, por isso lê-se ao tamanho
+// de um título e não ao dos campos que o descrevem.
+.fi--principal {
+  .q-field__native,
+  .q-field__input {
+    font-size: var(--fs-heading);
+    font-weight: var(--fw-semi);
+  }
+}
+
+// ── Grelha de formulário ─────────────────────────────────────────────────
+.form-grelha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-5) var(--sp-5);
+  align-items: start;
+}
+
+.form-grelha__larga { grid-column: 1 / -1; }
+
+@media (max-width: 599.98px) {
+  .form-grelha { grid-template-columns: minmax(0, 1fr); }
+  .form-grelha__larga { grid-column: auto; }
+}
+
+.form-seccao + .form-seccao { margin-top: var(--sp-6); }
+
+.form-seccao__titulo {
+  margin: 0 0 var(--sp-4);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-forte);
+  line-height: var(--lh-tight);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+// Grupo de opções dentro de uma secção de formulário — rádios de taxa,
+// selector de isenção. Recuado para se ler como dependente da caixa acima.
+.form-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) 0 0 var(--sp-5);
+  max-width: 420px;
+}
+
+// Sufixo dentro do campo: a unidade de um valor, ao lado do valor.
+.fi-sufixo {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+// ── Consumo padrão ───────────────────────────────────────────────────────
+// Ocupa a largura toda da aba: era uma lista estreita dentro de um cartão,
+// com o nome truncado e metade do ecrã por usar.
+.cp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.cp-topo {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+}
+
+.cp-intro { flex: 1 1 320px; min-width: 0; }
+
+.cp-titulo {
+  margin: 0 0 2px;
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  color: var(--text);
+}
+
+.cp-sub {
+  margin: 0;
+  font-size: var(--fs-label);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  max-width: 70ch;
+}
+
+.cp-procura { flex: 0 1 340px; min-width: 240px; }
+
+.cp-nada { font-size: var(--fs-label); color: var(--text-muted); }
+
+// ── A tabela ─────────────────────────────────────────────────────────────
+.cp-tabela-wrap { overflow-x: auto; }
+
+.cp-tabela {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+
+  thead th {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-forte);
+    line-height: var(--lh-tight);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td { border-bottom: 1px solid var(--border-soft); color: var(--text-2); }
+  tbody tr:last-child td { border-bottom: none; }
+}
+
+.cp-c {
+  padding: 0 var(--sp-3);
+  height: var(--row-h, 44px);
+  vertical-align: middle;
+}
+
+.cp-c--nome { font-weight: var(--fw-semi); color: var(--text); }
+.cp-c--tipo { color: var(--text-muted); white-space: nowrap; width: 110px; }
+.cp-c--qtd  { width: 130px; }
+.cp-c--un   { width: 110px; }
+.cp-c--eq   { width: 150px; white-space: nowrap; }
+.cp-c--rm   { width: 48px; text-align: right; }
+
+.cp-linha:hover { background: var(--surface-3); }
+
+// Os dois controlos da linha. Planos como o resto dos campos, mas com régua
+// à volta em vez de por baixo: numa célula de tabela, uma régua inferior
+// confunde-se com a da própria linha.
+.cp-num,
+.cp-un {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-body);
+
+  &:focus-visible {
+    border-color: var(--accent);
+    outline: var(--ring-w) solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.cp-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.cp-un:disabled {
+  color: var(--text-muted);
+  background: transparent;
+  border-color: transparent;
+  appearance: none;
+  padding-left: 0;
+}
+
+.cp-eq { color: var(--text-muted); font-size: var(--fs-label); }
+.cp-eq--igual { color: var(--text-faint); }
+
+.cp-rm {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover { background: var(--st-danger-tint); color: var(--st-danger-text); }
+}
+
+.cp-vazio {
+  margin: 0;
+  padding: var(--sp-5) 0;
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+}
+
+.cp-accoes {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+.cp-contagem {
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+
+// ── Parâmetros de exame ──────────────────────────────────────────────────
+// A mesma tabela do consumo padrão, pelas mesmas razões: era uma coluna
+// estreita com cada parâmetro em duas linhas, e a aba dá a largura toda.
+.pe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.pe-topo {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+}
+
+.pe-intro { flex: 1 1 320px; min-width: 0; }
+
+.pe-titulo {
+  margin: 0 0 2px;
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  color: var(--text);
+}
+
+.pe-sub {
+  margin: 0;
+  font-size: var(--fs-label);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  max-width: 70ch;
+}
+
+.pe-topo__accoes { display: flex; gap: var(--sp-2); flex-shrink: 0; }
+
+.pe-tabela-wrap { overflow-x: auto; }
+
+.pe-tabela {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+
+  thead th {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-forte);
+    line-height: var(--lh-tight);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td { border-bottom: 1px solid var(--border-soft); color: var(--text-2); }
+  tbody tr:last-child td { border-bottom: none; }
+}
+
+.pe-c {
+  padding: var(--sp-2) var(--sp-3);
+  vertical-align: top;
+}
+
+.pe-c--n    { width: 44px; color: var(--text-muted); font-variant-numeric: tabular-nums; padding-top: 14px; }
+.pe-c--un   { width: 130px; }
+.pe-c--ref  { width: 200px; }
+.pe-c--tipo { width: 190px; }
+.pe-c--rm   { width: 48px; text-align: right; }
+
+.pe-linha:hover { background: var(--surface-3); }
+
+// A secção atravessa a tabela: é o que faz na folha de resultados — separa,
+// não descreve um valor.
+.pe-seccao > .pe-c {
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.pe-campo {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-body);
+
+  &::placeholder { color: var(--text-faint); }
+
+  &:focus-visible {
+    border-color: var(--accent);
+    outline: var(--ring-w) solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.pe-campo--seccao {
+  font-weight: var(--fw-semi);
+  background: transparent;
+  border-color: transparent;
+
+  &:hover { border-color: var(--border-control); }
+}
+
+.pe-campo--avisa { border-color: var(--st-warn); }
+
+// O aviso não é erro: a referência fica guardada na mesma, só não marca
+// desvios. Por isso é o degrau de aviso e não o de perigo.
+.pe-aviso {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+  color: var(--st-warn-text);
+  cursor: help;
+}
+
+.pe-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+}
+
+// Sem cápsula pastel: a opção lê-se pelo contorno, como tudo o resto.
+.pe-opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-label);
+  color: var(--text-2);
+}
+
+.pe-opcao__rm {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+
+  &:hover { color: var(--st-danger-text); }
+}
+
+.pe-campo--opcao { min-width: 140px; flex: 1; }
+
+.pe-rm {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover { background: var(--st-danger-tint); color: var(--st-danger-text); }
+}
+
+.pe-vazio {
+  margin: 0;
+  padding: var(--sp-5) 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  max-width: 70ch;
+}
+
+.pe-accoes {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+.pe-contagem {
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+
+// ── Linhas de uma factura de compra ──────────────────────────────────────
+// A mesma tabela do consumo padrão e dos parâmetros de exame. Eram cartões
+// com duas linhas de campos e cinco colunas apertadas na primeira; uma
+// factura lê-se linha a linha, e é assim que se confere contra o papel.
+.lc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.lc-tabela-wrap { overflow-x: auto; }
+
+.lc-tabela {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+
+  thead th {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-forte);
+    line-height: var(--lh-tight);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td { border-bottom: 1px solid var(--border-soft); color: var(--text-2); }
+  tbody tr:last-child td { border-bottom: none; }
+}
+
+.lc-c {
+  padding: var(--sp-2) var(--sp-3);
+  vertical-align: middle;
+}
+
+.lc-c--artigo   { min-width: 220px; }
+.lc-c--qtd      { width: 84px; }
+.lc-c--un       { width: 116px; }
+.lc-c--conteudo { width: 140px; }
+.lc-c--entra    { width: 116px; white-space: nowrap; text-align: right; }
+.lc-c--custo    { width: 128px; }
+.lc-c--subtotal { width: 124px; white-space: nowrap; text-align: right; }
+.lc-c--lote     { width: 156px; }
+.lc-c--rm       { width: 44px; text-align: right; }
+
+.lc-linha:hover { background: var(--surface-3); }
+
+// O artigo e, por baixo, a unidade em que o stock o conta. Sem ela, o campo
+// do conteúdo não diz em quê — e o conteúdo é o número de que depende tudo
+// o que entra em stock.
+.lc-artigo__un {
+  margin-top: 2px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+  color: var(--text-muted);
+}
+
+.lc-num,
+.lc-txt,
+.lc-un {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-body);
+
+  &:focus-visible {
+    border-color: var(--accent);
+    outline: var(--ring-w) solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.lc-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+// Campo com a unidade colada ao valor, dentro da mesma moldura.
+.lc-conteudo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+
+  .lc-num { flex: 1 1 auto; min-width: 0; }
+}
+
+.lc-conteudo__un {
+  flex: 0 0 auto;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semi);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+// Quando a unidade comprada é a própria unidade de stock, não há embalagem
+// para declarar. O campo sai e fica dito porquê.
+.lc-sem-conteudo {
+  font-size: var(--fs-label);
+  color: var(--text-faint);
+}
+
+// As duas colunas calculadas. São a consequência do que foi escrito à
+// esquerda, e é por elas que se percebe um engano de uma ordem de grandeza
+// antes de ele entrar em stock.
+.lc-deriv {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-semi);
+  color: var(--text);
+}
+
+.lc-deriv__un {
+  margin-left: 3px;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-regular);
+  color: var(--text-muted);
+}
+
+.lc-lote {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lc-rm {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover { background: var(--st-danger-tint); color: var(--st-danger-text); }
+}
+
+.lc-vazio {
+  margin: 0;
+  padding: var(--sp-5) 0;
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+}
+
+.lc-accoes {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+// O total da factura. Grande porque é o número que se confere contra o
+// papel — e em texto normal, porque não é um valor clínico.
+.lc-total {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+}
+
+.lc-total__rotulo {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-forte);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.lc-total__valor {
+  font-size: var(--fs-heading);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+// ── Aviso de pré-condição ────────────────────────────────────────────────
+// O que impede o formulário de gravar, dito ao abrir em vez de ao gravar.
+// Sem tinta de estado: a urgência vem do sítio onde está e do que diz.
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-control);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.aviso__icone { flex: 0 0 auto; margin-top: 1px; color: var(--text-3); }
+.aviso__corpo { min-width: 0; }
+
+.aviso__titulo {
+  font-weight: var(--fw-semi);
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+// ── Vista de uma compra gravada ──────────────────────────────────────────
+// Uma compra não se edita: editá-la implicaria estornar e reaplicar stock e
+// caixa. O ecrã deixa de fingir que sim.
+.vc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.vc-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-4) var(--sp-5);
+}
+
+.vc-campo__rotulo {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-forte);
+  line-height: var(--lh-tight);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 3px;
+}
+
+.vc-campo__valor {
+  font-size: var(--fs-body);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.vc-campo__valor--principal {
+  font-size: var(--fs-heading);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+}
+
+.vc-accoes {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+
+// ── Abas de configuração de uma ficha ────────────────────────────────────
+// Abaixo dos campos, porque é o que se configura depois de o registo existir.
+.abas {
+  margin-top: var(--sp-6);
+  border-top: 1px solid var(--border);
+}
+
+.abas__barra {
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+// A aba activa marca-se por régua e peso, não por cor de fundo nem pílula.
+.abas__tab {
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medio);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.abas__tab--activa {
+  color: var(--text);
+  font-weight: var(--fw-semi);
+  border-bottom-color: var(--accent);
+}
+
+.abas__painéis { background: transparent; }
+
+.abas__painel { padding: var(--sp-5) 0 0; }
+
+.abas__vazio {
+  margin: 0;
+  padding: var(--sp-5) 0;
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+}
+
+
+// ── Botões de acção partilhados ──────────────────────────────────────────
+// A acção primária é a única com preenchimento sólido, e leva o verde
+// profundo porque carrega texto branco: o verde da marca daria 2,49:1.
+.btn-primaria {
+  background: var(--accent-strong);
+  color: #fff;
+  border-radius: var(--r-sm);
+  font-weight: var(--fw-semi);
+
+  &:hover { filter: none; background: var(--st-ok-text); }
+}
+
+// Destrutiva: sólida também, porque é uma confirmação e não uma sugestão.
+//
+// O texto por cima troca com o tema, e tem de trocar: no claro o vermelho é
+// escuro (#c53030) e leva branco a 5,47:1; no escuro é claro (#f87171) e o
+// branco cairia a 2,77:1 — em cima de um botão que apaga registos.
+.btn-destrutiva {
+  background: var(--st-danger-text);
+  color: var(--btn-destrutiva-fg);
+  border-radius: var(--r-sm);
+  font-weight: var(--fw-semi);
+}
+
+.btn-icone,
+.btn-icone-destrutivo {
+  color: var(--text-muted);
+  &:hover { color: var(--text-2); }
+}
+
+.btn-icone-destrutivo:hover { color: var(--st-danger-text); }
+
+.icone-destrutivo { color: var(--st-danger); }
+
+.item-destrutivo {
+  color: var(--st-danger-text);
+  &:hover { background: var(--st-danger-tint); }
+}
+
+// ── Página de lista ──────────────────────────────────────────────────────
+// Uma página é um cartão: cabeçalho, corpo que rola, rodapé. A coluna é flex
+// e só o corpo tem overflow, por isso o cabeçalho do cartão está sempre
+// visível sem precisar de `sticky` — e o `sticky` do cabeçalho da tabela
+// nunca tem com que colidir.
+.lp {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+
+.lp-head {
+  flex-shrink: 0;
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.lp-head__linha {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.lp-head__id {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.lp-titulo {
+  margin: 0;
+  font-size: var(--fs-heading);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// A etiqueta de contexto é onde se percebe que se está a ver um subconjunto.
+.lp-contexto {
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.lp-apoio {
+  margin: 0;
+  font-size: var(--fs-label);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  max-width: 70ch;
+}
+
+.lp-accoes {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.lp-contagem-sel {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.lp-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border-strong);
+}
+
+.lp-pesquisa {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 10px;
+  min-height: 34px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  border: 1px solid var(--border-control);
+  color: var(--text-muted);
+
+  &:focus-within { border-color: var(--accent); }
+}
+
+// Filtro no cabeçalho: rótulo e controlo nativo, mesma caixa da pesquisa.
+.lp-filtro {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 10px;
+  min-height: 34px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  border: 1px solid var(--border-control);
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+
+  &:focus-within { border-color: var(--accent); }
+
+  input {
+    border: none;
+    background: none;
+    outline: none;
+    font-family: inherit;
+    font-size: var(--fs-body);
+    color: var(--text);
+  }
+}
+
+.lp-pesquisa__campo {
+  border: none;
+  background: none;
+  outline: none;
+  min-width: 0;
+  width: 15ch;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  color: var(--text);
+
+  &::placeholder { color: var(--text-faint); }
+}
+
+// ── Corpo ────────────────────────────────────────────────────────────────
+.lp-corpo {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.lp-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-forte);
+    line-height: var(--lh-tight);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td { border-bottom: 1px solid var(--border-soft); color: var(--text-2); }
+  tbody tr:last-child td { border-bottom: none; }
+}
+
+.lp-c {
+  padding: 0 var(--sp-4);
+  height: var(--row-h, 44px);
+  vertical-align: middle;
+}
+
+.lp-c--num { text-align: right; font-variant-numeric: tabular-nums; }
+.lp-c--centro { text-align: center; }
+
+// O identificador do registo, que é o que permite varrer a lista sem ler o
+// resto. As outras colunas ficam em 400.
+.lp-c--forte { font-weight: var(--fw-semi); color: var(--text); }
+
+.lp-c--sel { width: 44px; padding-right: 0; }
+.lp-c--accoes { width: 48px; text-align: right; }
+
+.lp-linha {
+  transition: background 0.12s ease;
+  &:hover { background: var(--surface-3); }
+}
+
+.lp-linha--sel > .lp-c { background: var(--accent-soft); }
+
+// ── Ordenação ────────────────────────────────────────────────────────────
+// O indicador é o alvo de clique, não um adorno ao lado do rótulo.
+.lp-ord {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover { color: var(--text); }
+}
+
+.lp-ord--inactiva { cursor: default; opacity: 0.55; }
+
+// ── Secções de um relatório ──────────────────────────────────────────────
+// Um relatório tem mais do que uma tabela por página. Cada uma é uma secção
+// com título próprio, dentro do mesmo cartão — e as tabelas são as da
+// listagem (`.lp-tabela`), para não haver duas tabelas diferentes no sistema.
+.rel-seccao + .rel-seccao { margin-top: var(--sp-6); }
+
+.rel-seccao__titulo {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-forte);
+  line-height: var(--lh-tight);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.rel-seccao__contagem {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rel-vazio {
+  margin: 0;
+  padding: var(--sp-4) 0;
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+}
+
+.rel-tabela-wrap { overflow-x: auto; }
+
+// A linha de totais de uma tabela de relatório: mesma grelha, peso a mais.
+.rel-total td {
+  border-top: 1px solid var(--border-strong);
+  font-weight: var(--fw-semi);
+  color: var(--text);
+}
+
+// ── Filtros no cabeçalho de uma lista ────────────────────────────────────
+// Um `select` nativo, com a mesma moldura dos controlos das tabelas. Cada
+// página que filtrava trazia o seu — `pf-select`, `inv-filters select`,
+// botões de estado — e não havia dois iguais.
+.lp-filtro {
+  height: 32px;
+  max-width: 220px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-label);
+
+  &:focus-visible {
+    border-color: var(--accent);
+    outline: var(--ring-w) solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+// ── Estado: ponto e rótulo, sem cápsula ──────────────────────────────────
+.lp-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  white-space: nowrap;
+  font-weight: var(--fw-medio);
+}
+
+.lp-estado__ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.lp-estado--ok      { color: var(--st-ok-text); }
+.lp-estado--aviso   { color: var(--st-warn-text); }
+.lp-estado--erro    { color: var(--st-danger-text); }
+.lp-estado--info    { color: var(--st-info-text); }
+.lp-estado--neutro  { color: var(--text-muted); }
+
+.lp-menu-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover { background: var(--surface-3); color: var(--text-2); }
+}
+
+// ── Rodapé ───────────────────────────────────────────────────────────────
+.lp-rodape {
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--sp-5);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.lp-total {
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-rodape__nav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.lp-porpagina {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-label);
+  color: var(--text-muted);
+
+  select {
+    min-height: 28px;
+    padding: 0 var(--sp-2);
+    font-size: var(--fs-label);
+  }
+}
+
+// Afordância de scroll horizontal como melhoria progressiva. No alvo de build
+// declarado não existe, e a instrução é explícita: sem listeners a substituí-la.
+@supports (container-type: scroll-state) {
+  .lp-corpo { container-type: scroll-state; }
+
+  @container scroll-state(scrollable: right) {
+    .lp-tabela thead th:last-child { border-right: 1px solid var(--border-control); }
+  }
+}
+
+// Rótulo só para leitores de ecrã.
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 599.98px) {
+  .lp-head { padding: var(--sp-3); }
+  .lp-rodape { padding: var(--sp-2) var(--sp-3); }
+  .lp-c { padding: 0 10px; }
+  .lp-pesquisa__campo { width: 10ch; }
+}
+
+// ── Barra das listagens: paginação + selector de vista ───────────────────
+.dt-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dt-bar__pag { flex: 1; min-width: 0; }
+
+.view-switch {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  flex-shrink: 0;
+}
+
+.view-switch__btn {
+  width: 34px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { color: var(--text-2); }
+
+  // O --accent dá 2,49:1 sobre branco no tema claro: como cor de um ícone que
+  // diz qual a vista activa, é elemento gráfico portador de informação e
+  // reprova os 3:1. O estado passa a ler-se pela superfície e pelo contorno.
+  &--on {
+    background: var(--surface);
+    border: 1px solid var(--border-control);
+    color: var(--text);
+  }
+}
+
+// Coluna de acções da vista em tabela
+.tbl-col--actions {
+  flex: 0 0 auto;
+  min-width: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+// ── Campos de pesquisa ───────────────────────────────────────────────────
+// Alinha as caixas de pesquisa avulsas pelo mesmo aspecto do campo partilhado:
+// pílula, contorno subtil e anel verde ao focar.
+.q-field[class*="search"] .q-field__control,
+.search-field .q-field__control {
+  border-radius: var(--r-pill);
+  padding: 0 14px;
+}
+
+// ── Sidebar: cor uniforme ────────────────────────────────────────────────
+// Bloco no fim e com !important porque o Quasar pinta a gaveta por conta
+// própria (body--dark .q-drawer) e vencia as regras anteriores — daí o
+// sidebar não ter mudado com a alteração de --nav-bg.
+//
+// O vidro saiu daqui. Eram duas razões independentes, e qualquer uma chegava:
+// `backdrop-filter` numa superfície do tamanho de uma barra lateral obriga o
+// compositor a redesenhar o desfoque a cada scroll, e o PRODUCT.md dá as
+// máquinas antigas como condição confirmada, não como hipótese; e o halo que
+// existia para lhe dar o que apanhar era o elemento mais reconhecivelmente
+// gerado que restava no sistema.
+//
+// A barra passa a laje opaca em --nav-bg, separada da página por contorno.
+.sidebar-drawer,
+.sidebar-drawer .q-drawer__content {
+  background: var(--nav-bg) !important;
+}
+
+// O rodapé deixou de flutuar sobre a lista: a barra é uma coluna flex e a
+// navegação é a única parte que rola, por isso não há sobreposição para
+// resolver com fundo próprio.
+
+// O esbatimento no fundo da lista era um gradiente, e já estava desligado
+// desde que o vidro entrou: saiu por inteiro, na regra de origem, em vez de
+// ficar morto no ficheiro atrás de um `display: none`.
+
+// No tema escuro o verde profundo dá 3,76:1 sobre a superfície — chega para
+// um contorno, não para texto. Texto verde volta ao verde da marca, que aí
+// lê a 7,01:1. Os sólidos continuam no verde profundo, com branco a 4,64:1.
+body.body--dark .text-primary {
+  color: var(--accent) !important;
+}
+
+// ── Botões cinzentos da paleta do Quasar ─────────────────────────────────
+// Oito botões pelo sistema usam color="grey-2" text-color="grey-7", cores
+// fixas da paleta que não acompanham o tema: no escuro ficavam claros sobre
+// fundo escuro. Passam a seguir as superfícies.
+body.body--dark .q-btn.bg-grey-2 {
+  background: var(--surface-3) !important;
+
+  .q-btn__content,
+  &.text-grey-7 { color: var(--text-2) !important; }
+}
+
+// ── Cobertura responsiva ─────────────────────────────────────────────────
+//
+// Até aqui o app.scss não tinha uma única consulta de média, e a aplicação
+// inteira tinha seis (em 497 ficheiros .vue). A densidade e o scroll
+// horizontal faziam o trabalho que noutros sistemas é feito por reflow.
+//
+// O PRODUCT.md dá o hardware como confirmado: portáteis antigos, ecrãs
+// pequenos ou de baixa resolução. O alvo real não é o telemóvel — é o
+// 1024×768 e o 1366×768. Daí a escada seguir os breakpoints do Quasar, que
+// o sistema já usa, em vez de inventar os seus:
+//
+//   ≤ 1023.98px  portátil antigo, tablet
+//   ≤  599.98px  ecrã estreito
+//
+// A regra por trás de tudo o que se segue: encolher o invólucro antes de
+// encolher o texto. O piso de 12px não se toca — um ecrã que precise de
+// descer abaixo disso para caber está a pedir menos colunas, não menos
+// tamanho.
+
+@media (max-width: 1023.98px) {
+  .page-content {
+    padding: 12px;
+  }
+
+  .data-toolbar {
+    padding: 12px 14px;
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .form-card {
+    padding: 20px;
+  }
+
+}
+
+@media (max-width: 599.98px) {
+  .page-content {
+    padding: 8px;
+  }
+
+  .data-toolbar {
+    padding: 10px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .card-body {
+    padding: 16px 12px 12px;
+  }
+
+  .card-avatar {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+  }
+
+  // Formulário: duas colunas num ecrã estreito dão dois campos ilegíveis.
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-page {
+    padding: 12px;
+  }
+
+  .form-card {
+    padding: 16px;
+  }
+
+  // Acções empilhadas e à largura toda: alvos de toque que aguentam um dedo,
+  // que é o requisito do PRODUCT.md para este hardware.
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+
+    .q-btn {
+      width: 100%;
+    }
+  }
+
+  .state-box {
+    padding: 40px 0;
+  }
+
+  // Tabelas: scroll horizontal próprio, nunca da página.
+  // As células têm min-width: 0 e, sem um piso, esmagavam-se até ficarem
+  // ilegíveis em vez de provocarem scroll.
+  .prod-table,
+  .tbl {
+    overflow-x: auto;
+  }
+
+  .pt-head,
+  .report-list-head,
+  .tbl-head,
+  .pt-row,
+  .report-row,
+  .tbl-row {
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .pr-cell,
+  .tbl-cell,
+  .ph-cell,
+  .tbl-head-cell {
+    min-width: 92px;
+  }
+
+  .tbl-cell--strong,
+  .pr-name {
+    min-width: 140px;
+  }
+
+  // A q-table já traz scroll horizontal próprio (.q-table__middle); o que
+  // falta é o respiro das células, que a 16px de cada lado rouba metade da
+  // largura útil num ecrã estreito.
+  .q-table {
+    thead th,
+    tbody td {
+      padding: 10px 10px;
+    }
+  }
+
+  .q-table__top,
+  .q-table__bottom {
+    padding: 10px 12px;
+  }
+}
